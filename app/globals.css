@@ -1,26 +1,89 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #060913;
+  --bg-soft: #0d1224;
+  --fg: #eff6ff;
+  --muted: rgba(226, 232, 240, 0.7);
+  --ring: rgba(56, 189, 248, 0.45);
+}
+
+:root[data-theme="light"] {
+  --bg: #e9edf8;
+  --bg-soft: #f6f8ff;
+  --fg: #0b1324;
+  --muted: rgba(15, 23, 42, 0.72);
+  --ring: rgba(2, 132, 199, 0.35);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body), sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-display), sans-serif;
+}
+
+.font-mono {
+  font-family: var(--font-mono), monospace;
+}
+
+::selection {
+  background: rgba(16, 185, 129, 0.35);
+  color: white;
+}
+
+button,
+input,
+select {
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring);
+}
+
+@keyframes gentlePulse {
+  0% {
+    opacity: 0.45;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.01);
+  }
+  100% {
+    opacity: 0.45;
+    transform: scale(0.98);
+  }
+}
+
+.live-pulse {
+  animation: gentlePulse 1.8s ease-in-out infinite;
 }
