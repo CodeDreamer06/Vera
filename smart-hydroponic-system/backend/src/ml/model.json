@@ -1,0 +1,9 @@
+{
+  "bias": -2.2,
+  "weights": {
+    "phDeviation": 1.8,
+    "highTemp": 1.1,
+    "lowHumidity": 0.9,
+    "lowWater": 1.6
+  }
+}
