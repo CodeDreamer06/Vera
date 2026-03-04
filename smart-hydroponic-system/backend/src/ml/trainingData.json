@@ -1,0 +1,12 @@
+[
+  { "ph": 6.1, "airTempC": 24.0, "humidity": 65, "waterLevelPct": 70, "nutrientRiskLabel": 0.08 },
+  { "ph": 5.9, "airTempC": 25.0, "humidity": 62, "waterLevelPct": 64, "nutrientRiskLabel": 0.12 },
+  { "ph": 5.6, "airTempC": 27.0, "humidity": 58, "waterLevelPct": 50, "nutrientRiskLabel": 0.32 },
+  { "ph": 5.3, "airTempC": 29.5, "humidity": 50, "waterLevelPct": 35, "nutrientRiskLabel": 0.58 },
+  { "ph": 5.1, "airTempC": 31.0, "humidity": 42, "waterLevelPct": 20, "nutrientRiskLabel": 0.84 },
+  { "ph": 6.7, "airTempC": 28.0, "humidity": 48, "waterLevelPct": 30, "nutrientRiskLabel": 0.63 },
+  { "ph": 6.9, "airTempC": 32.0, "humidity": 40, "waterLevelPct": 18, "nutrientRiskLabel": 0.9 },
+  { "ph": 6.3, "airTempC": 26.0, "humidity": 60, "waterLevelPct": 55, "nutrientRiskLabel": 0.2 },
+  { "ph": 5.8, "airTempC": 23.0, "humidity": 68, "waterLevelPct": 78, "nutrientRiskLabel": 0.07 },
+  { "ph": 5.4, "airTempC": 30.0, "humidity": 45, "waterLevelPct": 28, "nutrientRiskLabel": 0.72 }
+]
