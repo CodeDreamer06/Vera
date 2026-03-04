@@ -1,12 +1,23 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Bot, Sparkles, TriangleAlert } from "lucide-react";
+import {
+  Activity,
+  Bot,
+  Droplets,
+  FlaskConical,
+  Sparkles,
+  Sun,
+  Thermometer,
+  TriangleAlert,
+  Waves,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { SensorChart } from "@/components/charts/SensorChart";
+import { SensorMetricCard } from "@/components/dashboard/SensorMetricCard";
 import { AppShell } from "@/components/layout/AppShell";
 import { PlantCard } from "@/components/PlantCard";
 import { AlertsCenter } from "@/components/panels/AlertsCenter";
@@ -23,7 +34,7 @@ import { PanelErrorBoundary } from "@/components/ui/PanelErrorBoundary";
 import { ShortcutsDialog } from "@/components/ui/ShortcutsDialog";
 import { useShortcutBindings } from "@/lib/shortcuts/useShortcutBindings";
 import { useAppStore } from "@/lib/store";
-import type { TimeTravelControls } from "@/types/domain";
+import type { SensorReading, TimeTravelControls } from "@/types/domain";
 
 const chartMetrics = [
   "pH",
@@ -33,6 +44,59 @@ const chartMetrics = [
   "humidity",
   "soilMoisture",
 ] as const;
+
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, value));
+
+const getMetricStatus = (
+  value: number,
+  low: number,
+  high: number,
+  warningPad: number,
+): "good" | "warn" | "critical" => {
+  if (value < low || value > high) {
+    return "critical";
+  }
+
+  if (value < low + warningPad || value > high - warningPad) {
+    return "warn";
+  }
+
+  return "good";
+};
+
+const dashboardMetrics = (reading?: SensorReading) => {
+  if (!reading) {
+    return {
+      tempC: null,
+      humidity: null,
+      pH: null,
+      waterLevel: null,
+      lightLux: null,
+    };
+  }
+
+  const waterLevel = clamp(
+    100 -
+      ((reading.waterUsageMl - 40) / (450 - 40)) * 58 +
+      (reading.soilMoisture - 55) * 0.35,
+    0,
+    100,
+  );
+  const lightLux = clamp(
+    17500 + reading.tds * 8 + (reading.tempC - 22) * 520,
+    9000,
+    36000,
+  );
+
+  return {
+    tempC: reading.tempC,
+    humidity: reading.humidity,
+    pH: reading.pH,
+    waterLevel,
+    lightLux,
+  };
+};
 
 export function FleetDashboard() {
   const router = useRouter();
@@ -116,6 +180,7 @@ export function FleetDashboard() {
     ? (readingsByPlant[activePlant.id] ?? [])
     : [];
   const latestReading = activeReadings.at(-1);
+  const hydro = dashboardMetrics(latestReading);
   const personaMessages = activePlant
     ? (personaByPlant[activePlant.id] ?? [])
     : [];
@@ -123,6 +188,12 @@ export function FleetDashboard() {
     ? (diseaseByPlant[activePlant.id] ?? [])
     : [];
   const inboxMessages = activePlant ? (inboxByPlant[activePlant.id] ?? []) : [];
+  const totalCriticalAlerts = alerts.filter(
+    (alert) => alert.status === "open" && alert.severity === "critical",
+  ).length;
+  const totalPlantsOnline = plants.filter(
+    (plant) => (readingsByPlant[plant.id] ?? []).length > 0,
+  ).length;
 
   useShortcutBindings({
     onPalette: () => setPaletteOpen(true),
@@ -163,8 +234,8 @@ export function FleetDashboard() {
 
   return (
     <AppShell
-      title="Fleet Command Center"
-      subtitle="Monitor many plants, predict issues early, and coordinate interventions with an LLM copilot."
+      title="Hydroponic Monitoring Dashboard"
+      subtitle="Track live mock telemetry, inspect plant health, and act on early warnings."
       rightActions={
         <>
           <button
@@ -211,6 +282,143 @@ export function FleetDashboard() {
         </GlassCard>
       ) : (
         <>
+          <motion.div
+            layout
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="grid gap-4 lg:grid-cols-[1.15fr_1fr]"
+          >
+            <GlassCard>
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.18em] text-cyan-200/70">
+                    Hydroponic Monitoring Dashboard
+                  </p>
+                  <h3 className="font-display text-xl font-semibold tracking-tight">
+                    Live greenhouse overview
+                  </h3>
+                </div>
+                <Pill className="border-cyan-300/35 bg-cyan-500/15 text-cyan-100">
+                  <Activity size={12} className="mr-1" />
+                  Mock stream active
+                </Pill>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                  <p className="text-[11px] uppercase tracking-[0.14em] text-white/60">
+                    Plants online
+                  </p>
+                  <p className="mt-1 font-mono text-2xl font-semibold">
+                    {totalPlantsOnline}/{plants.length}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                  <p className="text-[11px] uppercase tracking-[0.14em] text-white/60">
+                    Open alerts
+                  </p>
+                  <p className="mt-1 font-mono text-2xl font-semibold">
+                    {alerts.filter((alert) => alert.status === "open").length}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                  <p className="text-[11px] uppercase tracking-[0.14em] text-white/60">
+                    Critical alerts
+                  </p>
+                  <p className="mt-1 font-mono text-2xl font-semibold text-rose-200">
+                    {totalCriticalAlerts}
+                  </p>
+                </div>
+              </div>
+            </GlassCard>
+
+            <GlassCard>
+              <div className="mb-3">
+                <p className="text-xs uppercase tracking-[0.16em] text-emerald-200/75">
+                  Active zone
+                </p>
+                <h3 className="font-display text-lg font-semibold">
+                  {activePlant
+                    ? `${activePlant.name} • ${activePlant.zone}`
+                    : "No active plant"}
+                </h3>
+              </div>
+
+              <div className="grid gap-2 sm:grid-cols-2">
+                <SensorMetricCard
+                  label="Temperature"
+                  value={hydro.tempC === null ? "--" : hydro.tempC.toFixed(1)}
+                  unit="°C"
+                  hint="Target 20-27°C"
+                  status={
+                    hydro.tempC === null
+                      ? "warn"
+                      : getMetricStatus(hydro.tempC, 20, 27, 1)
+                  }
+                  icon={Thermometer}
+                />
+                <SensorMetricCard
+                  label="Humidity"
+                  value={
+                    hydro.humidity === null ? "--" : hydro.humidity.toFixed(0)
+                  }
+                  unit="%"
+                  hint="Target 50-75%"
+                  status={
+                    hydro.humidity === null
+                      ? "warn"
+                      : getMetricStatus(hydro.humidity, 50, 75, 4)
+                  }
+                  icon={Droplets}
+                />
+                <SensorMetricCard
+                  label="pH"
+                  value={hydro.pH === null ? "--" : hydro.pH.toFixed(2)}
+                  unit=""
+                  hint="Target 5.8-6.4"
+                  status={
+                    hydro.pH === null
+                      ? "warn"
+                      : getMetricStatus(hydro.pH, 5.8, 6.4, 0.12)
+                  }
+                  icon={FlaskConical}
+                />
+                <SensorMetricCard
+                  label="Water Level"
+                  value={
+                    hydro.waterLevel === null
+                      ? "--"
+                      : hydro.waterLevel.toFixed(0)
+                  }
+                  unit="%"
+                  hint="Estimated reservoir fullness"
+                  status={
+                    hydro.waterLevel === null
+                      ? "warn"
+                      : getMetricStatus(hydro.waterLevel, 38, 95, 8)
+                  }
+                  icon={Waves}
+                />
+                <SensorMetricCard
+                  label="Light Intensity"
+                  value={
+                    hydro.lightLux === null
+                      ? "--"
+                      : Math.round(hydro.lightLux).toString()
+                  }
+                  unit="lux"
+                  hint="Estimated grow-light output"
+                  status={
+                    hydro.lightLux === null
+                      ? "warn"
+                      : getMetricStatus(hydro.lightLux, 14000, 32000, 1800)
+                  }
+                  icon={Sun}
+                />
+              </div>
+            </GlassCard>
+          </motion.div>
+
           <motion.div
             layout
             initial={{ opacity: 0, y: 6 }}
@@ -313,20 +521,86 @@ export function FleetDashboard() {
                       metric={metric}
                     />
 
-                    <div className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
-                      <div className="rounded-lg bg-white/5 p-2">
-                        pH {latestReading?.pH.toFixed(2) ?? "--"}
-                      </div>
-                      <div className="rounded-lg bg-white/5 p-2">
-                        TDS{" "}
-                        {latestReading ? Math.round(latestReading.tds) : "--"}
-                      </div>
-                      <div className="rounded-lg bg-white/5 p-2">
-                        DO {latestReading?.do.toFixed(1) ?? "--"}
-                      </div>
-                      <div className="rounded-lg bg-white/5 p-2">
-                        Temp {latestReading?.tempC.toFixed(1) ?? "--"}°C
-                      </div>
+                    <div className="mt-3 grid gap-2 md:grid-cols-5">
+                      <SensorMetricCard
+                        label="Temperature"
+                        value={
+                          hydro.tempC === null ? "--" : hydro.tempC.toFixed(1)
+                        }
+                        unit="°C"
+                        hint="Target 20-27°C"
+                        status={
+                          hydro.tempC === null
+                            ? "warn"
+                            : getMetricStatus(hydro.tempC, 20, 27, 1)
+                        }
+                        icon={Thermometer}
+                      />
+                      <SensorMetricCard
+                        label="Humidity"
+                        value={
+                          hydro.humidity === null
+                            ? "--"
+                            : hydro.humidity.toFixed(0)
+                        }
+                        unit="%"
+                        hint="Target 50-75%"
+                        status={
+                          hydro.humidity === null
+                            ? "warn"
+                            : getMetricStatus(hydro.humidity, 50, 75, 4)
+                        }
+                        icon={Droplets}
+                      />
+                      <SensorMetricCard
+                        label="pH"
+                        value={hydro.pH === null ? "--" : hydro.pH.toFixed(2)}
+                        unit=""
+                        hint="Target 5.8-6.4"
+                        status={
+                          hydro.pH === null
+                            ? "warn"
+                            : getMetricStatus(hydro.pH, 5.8, 6.4, 0.12)
+                        }
+                        icon={FlaskConical}
+                      />
+                      <SensorMetricCard
+                        label="Water Level"
+                        value={
+                          hydro.waterLevel === null
+                            ? "--"
+                            : hydro.waterLevel.toFixed(0)
+                        }
+                        unit="%"
+                        hint="Estimated reservoir fullness"
+                        status={
+                          hydro.waterLevel === null
+                            ? "warn"
+                            : getMetricStatus(hydro.waterLevel, 38, 95, 8)
+                        }
+                        icon={Waves}
+                      />
+                      <SensorMetricCard
+                        label="Light Intensity"
+                        value={
+                          hydro.lightLux === null
+                            ? "--"
+                            : Math.round(hydro.lightLux).toString()
+                        }
+                        unit="lux"
+                        hint="Estimated grow-light output"
+                        status={
+                          hydro.lightLux === null
+                            ? "warn"
+                            : getMetricStatus(
+                                hydro.lightLux,
+                                14000,
+                                32000,
+                                1800,
+                              )
+                        }
+                        icon={Sun}
+                      />
                     </div>
                   </GlassCard>
                 </PanelErrorBoundary>
