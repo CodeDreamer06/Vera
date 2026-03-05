@@ -29,20 +29,6 @@ export function AppShell({
       <div className="scanlines" />
       <div className="crt-flicker" />
 
-      {/* Construction Tape Header */}
-      <div className="marquee-container relative z-50 border-b-[3px] border-black bg-[var(--color-accent)] py-2">
-        <div className="marquee-content flex gap-8 font-mono text-xs font-bold uppercase tracking-[0.2em]">
-          <span>⚠ SYSTEM NOMINAL // 9 UNITS ACTIVE</span>
-          <span>PH LEVELS OPTIMAL</span>
-          <span>TDS MONITORING ENABLED</span>
-          <span>/// LLM COPILOT STANDBY ///</span>
-          <span>⚠ SYSTEM NOMINAL // 9 UNITS ACTIVE</span>
-          <span>PH LEVELS OPTIMAL</span>
-          <span>TDS MONITORING ENABLED</span>
-          <span>/// LLM COPILOT STANDBY ///</span>
-        </div>
-      </div>
-
       <div className="flex min-h-[calc(100vh-42px)]">
         {/* Brutalist Sidebar */}
         <aside className="fixed top-[42px] z-40 hidden h-[calc(100vh-42px)] w-72 flex-col overflow-y-auto border-r-[3px] border-black bg-white lg:flex">
