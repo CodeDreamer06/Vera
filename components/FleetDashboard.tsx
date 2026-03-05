@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Bot, Sparkles, TriangleAlert } from "lucide-react";
+import { Bot, Sparkles, Terminal, TriangleAlert } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -16,6 +16,7 @@ import { OperatorBriefPanel } from "@/components/panels/OperatorBriefPanel";
 import { PersonaPanel } from "@/components/panels/PersonaPanel";
 import { PlantInbox } from "@/components/panels/PlantInbox";
 import { RecipeModePanel } from "@/components/panels/RecipeModePanel";
+import { TerminalPanel } from "@/components/panels/TerminalPanel";
 import { TimeTravelPanel } from "@/components/panels/TimeTravelPanel";
 import { CommandPalette } from "@/components/ui/CommandPalette";
 import { GlassCard, Pill } from "@/components/ui/Glass";
@@ -124,6 +125,10 @@ export function FleetDashboard() {
     : [];
   const inboxMessages = activePlant ? (inboxByPlant[activePlant.id] ?? []) : [];
 
+  // Terminal output content
+  const alertCount = alerts.filter(a => a.severity === "high" || a.severity === "critical").length;
+  const activeCount = plants.length;
+
   useShortcutBindings({
     onPalette: () => setPaletteOpen(true),
     onShortcuts: () => setShortcutsOpen(true),
@@ -164,21 +169,21 @@ export function FleetDashboard() {
   return (
     <AppShell
       title="Fleet Command Center"
-      subtitle="Monitor many plants, predict issues early, and coordinate interventions with an LLM copilot."
+      subtitle="Monitor biological units. Predict system failures. Coordinate interventions via LLM copilot interface."
       rightActions={
         <>
           <button
             type="button"
-            className="neo-box neo-button"
+            className="neo-box neo-button neo-button-alert font-black"
             onClick={() =>
-              startDemoMode(Number(process.env.NEXT_PUBLIC_MAX_PLANTS ?? 10))
+              startDemoMode(Number(process.env.NEXT_PUBLIC_MAX_PLANTS ?? 9))
             }
           >
-            Start Demo Mode
+            Start Demo
           </button>
           <button
             type="button"
-            className="neo-box neo-button neo-button-accent"
+            className="neo-box neo-button neo-button-accent font-black"
             onClick={async () => {
               setOpsLoading(true);
               try {
@@ -191,89 +196,180 @@ export function FleetDashboard() {
               }
             }}
           >
-            {opsLoading ? "Working..." : "Morning Ops Brief"}
+            {opsLoading ? "PROCESSING..." : "Morning Ops"}
           </button>
           <button
             type="button"
-            className="neo-box neo-button"
+            className="neo-box neo-button-dark text-white font-black"
             onClick={() => setPaletteOpen(true)}
           >
-            Command Palette
+            ⌘_Palette
           </button>
         </>
       }
     >
       {loading ? (
-        <GlassCard>
-          <p className="text-sm text-black/65">
-            Initializing telemetry fabric...
-          </p>
-        </GlassCard>
+        <div className="neo-box bg-white p-8 text-center">
+          <div className="font-mono text-sm uppercase tracking-wider">
+            <span className="cursor-blink">INITIALIZING SYSTEM</span>
+          </div>
+        </div>
       ) : (
         <>
-          <motion.div
-            layout
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="grid gap-4 lg:grid-cols-[1.5fr_1fr]"
-          >
-            <GlassCard>
-              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <Sparkles size={15} className="text-[var(--color-info)]" />
-                  <h3 className="text-sm font-semibold">Multi-Plant Monitor</h3>
-                  {recipeMode ? (
-                    <Pill className="bg-[var(--color-accent)]">
-                      Recipe mode active
-                    </Pill>
-                  ) : null}
+          {/* Main Content Grid - Plant Monitor + Terminal */}
+          <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
+            {/* Left Column: Plant Grid */}
+            <div className="space-y-6">
+              {/* Controls Bar */}
+              <div className="neo-box bg-white p-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-1 h-8 bg-black" />
+                    <h3 className="text-xl font-black uppercase tracking-tight">
+                      Multi-Plant_Monitor
+                    </h3>
+                    <span className="neo-pill bg-gray-100">
+                      {activeCount}_UNITS
+                    </span>
+                    {recipeMode ? (
+                      <span className="neo-pill neo-pill-accent">
+                        RECIPE_MODE
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <div className="neo-inset flex items-center px-4 py-2 w-full sm:w-auto min-w-[280px]">
+                    <span className="font-mono font-bold text-xl mr-2">&gt;</span>
+                    <input
+                      ref={searchRef}
+                      value={search}
+                      onChange={(e) => setSearch(e.currentTarget.value)}
+                      placeholder="SEARCH_ID..."
+                      className="bg-transparent border-none outline-none font-mono font-bold uppercase w-full text-lg placeholder-gray-400"
+                    />
+                    <span className="cursor-blink" />
+                  </div>
                 </div>
-                <input
-                  ref={searchRef}
-                  value={search}
-                  onChange={(e) => setSearch(e.currentTarget.value)}
-                  placeholder="Search plant, species, zone"
-                  className="neo-input w-full max-w-sm px-3 py-1.5 text-sm outline-none focus:ring"
-                />
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                {filteredPlants.map((plant) => (
+              {/* Plant Cards Grid */}
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-2">
+                {filteredPlants.map((plant, index) => (
                   <PlantCard
                     key={plant.id}
                     plant={plant}
                     latest={(readingsByPlant[plant.id] ?? []).at(-1)}
                     persona={(personaByPlant[plant.id] ?? []).at(-1)}
                     onFocus={() => setActivePlant(plant.id)}
+                    variant={index % 4 === 1 ? "info" : index % 4 === 3 ? "alert" : index % 4 === 2 ? "accent" : "default"}
                   />
                 ))}
               </div>
-            </GlassCard>
 
-            <PanelErrorBoundary panel="operator-brief">
-              <OperatorBriefPanel
-                briefs={opsBriefs}
-                loading={opsLoading}
-                onGenerate={async () => {
-                  setOpsLoading(true);
-                  try {
-                    await runOperatorBrief();
-                  } finally {
-                    setOpsLoading(false);
-                  }
-                }}
-              />
-            </PanelErrorBoundary>
-          </motion.div>
+              {/* Load More */}
+              <button className="w-full neo-box py-4 font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all group">
+                Load More Units [+]
+              </button>
+            </div>
+
+            {/* Right Column: Terminal + Quick Stats */}
+            <div className="space-y-6">
+              <PanelErrorBoundary panel="operator-brief">
+                <TerminalPanel
+                  briefs={opsBriefs}
+                  loading={opsLoading}
+                  onGenerate={async () => {
+                    setOpsLoading(true);
+                    try {
+                      await runOperatorBrief();
+                    } finally {
+                      setOpsLoading(false);
+                    }
+                  }}
+                  alertCount={alertCount}
+                  activeCount={activeCount}
+                />
+              </PanelErrorBoundary>
+
+              {/* Quick Stats Grid */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="neo-box p-4 text-center">
+                  <div className="text-3xl font-black seven-seg">
+                    {String(activeCount).padStart(2, "0")}
+                  </div>
+                  <div className="font-mono text-xs uppercase mt-1">Active</div>
+                </div>
+                <div className={`neo-box p-4 text-center ${alertCount > 0 ? "bg-[var(--color-alert)]" : "bg-white"}`}>
+                  <div className={`text-3xl font-black seven-seg ${alertCount > 0 ? "text-white" : ""}`}>
+                    {String(alertCount).padStart(2, "0")}
+                  </div>
+                  <div className={`font-mono text-xs uppercase mt-1 ${alertCount > 0 ? "text-white" : ""}`}>
+                    Alert
+                  </div>
+                </div>
+                <div className="neo-box p-4 text-center col-span-2 bg-[var(--color-info)] text-white border-black">
+                  <div className="flex justify-between items-center">
+                    <span className="font-mono text-xs uppercase">LLM Status</span>
+                    <span className="text-xl font-black">ONLINE</span>
+                  </div>
+                  <div className="w-full bg-black h-2 mt-2 border border-white">
+                    <div className="bg-[var(--color-accent)] h-full w-full animate-pulse" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Mini Operator Brief */}
+              <PanelErrorBoundary panel="operator-brief">
+                <OperatorBriefPanel
+                  briefs={opsBriefs}
+                  loading={opsLoading}
+                  onGenerate={async () => {
+                    setOpsLoading(true);
+                    try {
+                      await runOperatorBrief();
+                    } finally {
+                      setOpsLoading(false);
+                    }
+                  }}
+                />
+              </PanelErrorBoundary>
+            </div>
+          </div>
 
           {activePlant ? (
             <motion.div
               layout
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              className="grid gap-4 xl:grid-cols-[1.6fr_1fr]"
+              className="mt-8 border-t-[3px] border-black pt-8"
             >
-              <div className="space-y-4">
+              {/* Active Plant Header */}
+              <div className="neo-box bg-black text-white p-4 mb-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Terminal size={20} className="text-[var(--color-accent)]" />
+                    <span className="font-mono text-xs uppercase text-[var(--color-accent)]">
+                      Active Unit //
+                    </span>
+                    <span className="font-black text-xl uppercase tracking-tight">
+                      {activePlant.name}
+                    </span>
+                    <span className="neo-pill bg-white text-black">
+                      {activePlant.species}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="status-dot active" />
+                    <span className="font-mono text-xs uppercase">
+                      {activePlant.healthScore}% HEALTH
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-6 xl:grid-cols-[1.6fr_1fr]">
+                {/* Left: Charts & Data */}
+                <div className="space-y-6">
                 <PanelErrorBoundary
                   panel="sensor-chart"
                   plantId={activePlant.id}
@@ -281,12 +377,11 @@ export function FleetDashboard() {
                   <GlassCard>
                     <div className="mb-3 flex items-center justify-between gap-2">
                       <div>
-                        <h3 className="text-sm font-semibold text-black">
+                        <h3 className="text-sm font-black uppercase tracking-tight text-black">
                           Live Telemetry • {activePlant.name}
                         </h3>
-                        <p className="text-xs text-black/65">
-                          Incoming simulated data with noise, drift, and
-                          anomalies
+                        <p className="text-xs text-black/65 font-mono uppercase">
+                          Incoming simulated data with noise, drift, and anomalies
                         </p>
                       </div>
                       <select
@@ -298,7 +393,7 @@ export function FleetDashboard() {
                               .value as (typeof chartMetrics)[number],
                           )
                         }
-                        className="neo-input px-2 py-1 text-xs"
+                        className="neo-input px-3 py-2 text-xs"
                       >
                         {chartMetrics.map((m) => (
                           <option key={m} value={m}>
@@ -313,19 +408,24 @@ export function FleetDashboard() {
                       metric={metric}
                     />
 
-                    <div className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
-                      <div className="neo-inset p-2">
-                        pH {latestReading?.pH.toFixed(2) ?? "--"}
+                    <div className="mt-4 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
+                      <div className="neo-inset p-3 text-center">
+                        <div className="text-[10px] font-mono uppercase opacity-50 mb-1">pH_Lvl</div>
+                        <div className="text-xl font-black seven-seg">{latestReading?.pH.toFixed(2) ?? "--"}</div>
                       </div>
-                      <div className="neo-inset p-2">
-                        TDS{" "}
-                        {latestReading ? Math.round(latestReading.tds) : "--"}
+                      <div className="neo-inset p-3 text-center bg-[var(--color-accent)]">
+                        <div className="text-[10px] font-mono uppercase mb-1">TDS</div>
+                        <div className="text-xl font-black seven-seg">
+                          {latestReading ? Math.round(latestReading.tds) : "--"}
+                        </div>
                       </div>
-                      <div className="neo-inset p-2">
-                        DO {latestReading?.do.toFixed(1) ?? "--"}
+                      <div className="neo-inset p-3 text-center">
+                        <div className="text-[10px] font-mono uppercase opacity-50 mb-1">DO</div>
+                        <div className="text-xl font-black seven-seg">{latestReading?.do.toFixed(1) ?? "--"}</div>
                       </div>
-                      <div className="neo-inset p-2">
-                        Temp {latestReading?.tempC.toFixed(1) ?? "--"}°C
+                      <div className="neo-inset p-3 text-center">
+                        <div className="text-[10px] font-mono uppercase opacity-50 mb-1">TEMP</div>
+                        <div className="text-xl font-black seven-seg">{latestReading?.tempC.toFixed(1) ?? "--"}°C</div>
                       </div>
                     </div>
                   </GlassCard>
@@ -351,7 +451,8 @@ export function FleetDashboard() {
                 </PanelErrorBoundary>
               </div>
 
-              <div className="space-y-4">
+              {/* Right: Persona & Tools */}
+              <div className="space-y-6">
                 <PanelErrorBoundary panel="persona" plantId={activePlant.id}>
                   <PersonaPanel
                     messages={personaMessages}
@@ -439,43 +540,56 @@ export function FleetDashboard() {
                   </PanelErrorBoundary>
                 ) : null}
 
-                <GlassCard>
-                  <div className="mb-2 flex items-center gap-2">
-                    <Bot size={15} className="text-[var(--color-info)]" />
-                    <h3 className="text-sm font-semibold text-black">
-                      Predictive Watch
-                    </h3>
-                  </div>
-                  {alerts
-                    .slice()
-                    .reverse()
-                    .filter(
-                      (alert) =>
-                        alert.type === "predictive" &&
-                        alert.plantId === activePlant.id,
-                    )
-                    .slice(0, 2)
-                    .map((alert) => (
-                      <div
-                        key={alert.id}
-                        className="neo-box mb-2 bg-[var(--color-accent)] p-3"
-                      >
-                        <div className="mb-1 flex items-center gap-2 text-black">
-                          <TriangleAlert size={14} />
-                          <p className="text-xs font-medium">{alert.title}</p>
+                {/* Predictive Watch */}
+                  <div className="neo-box bg-white p-4">
+                    <div className="mb-3 flex items-center gap-2 border-b-2 border-black pb-2">
+                      <Bot size={15} className="text-[var(--color-info)]" />
+                      <h3 className="text-sm font-black uppercase tracking-tight text-black">
+                        Predictive Watch
+                      </h3>
+                    </div>
+                    {alerts
+                      .slice()
+                      .reverse()
+                      .filter(
+                        (alert) =>
+                          alert.type === "predictive" &&
+                          alert.plantId === activePlant.id,
+                      )
+                      .slice(0, 2)
+                      .map((alert) => (
+                        <div
+                          key={alert.id}
+                          className="neo-box mb-2 bg-[var(--color-accent)] p-3"
+                        >
+                          <div className="mb-1 flex items-center gap-2 text-black">
+                            <TriangleAlert size={14} />
+                            <p className="text-xs font-bold uppercase">{alert.title}</p>
+                          </div>
+                          <p className="text-xs text-black/75 font-mono uppercase">
+                            {alert.description}
+                          </p>
                         </div>
-                        <p className="text-xs text-black/75">
-                          {alert.description}
-                        </p>
-                      </div>
-                    ))}
-                </GlassCard>
+                      ))}
+                    {alerts.filter(a => a.type === "predictive" && a.plantId === activePlant.id).length === 0 && (
+                      <p className="text-xs text-black/50 font-mono uppercase">
+                        No predictive alerts for this unit.
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
             </motion.div>
           ) : (
-            <GlassCard>
-              <p className="text-sm text-black/65">No plants seeded yet.</p>
-            </GlassCard>
+            <div className="neo-box bg-white p-8 text-center">
+              <div className="text-4xl mb-4">◉</div>
+              <p className="font-mono text-sm uppercase text-black/65">
+                No biological units seeded yet.
+              </p>
+              <p className="font-mono text-xs uppercase text-black/40 mt-2">
+                Initialize demo mode to populate fleet.
+              </p>
+            </div>
           )}
         </>
       )}

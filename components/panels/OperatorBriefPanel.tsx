@@ -1,5 +1,7 @@
 "use client";
 
+import { FileText } from "lucide-react";
+
 import { GlassCard } from "@/components/ui/Glass";
 import { formatDateTime } from "@/lib/utils";
 import type { OpsBrief } from "@/types/domain";
@@ -17,48 +19,70 @@ export function OperatorBriefPanel({
 
   return (
     <GlassCard>
-      <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-black">
-          Operator Mode Briefing
-        </h3>
+      <div className="panel-header">
+        <div className="flex items-center gap-2">
+          <FileText size={15} className="text-[var(--color-info)]" />
+          <h3 className="panel-title">Ops_Briefing</h3>
+        </div>
         <button
           type="button"
-          className="neo-box neo-button neo-button-accent"
+          className="neo-box neo-button neo-button-accent text-xs"
           onClick={onGenerate}
+          disabled={loading}
         >
-          {loading ? "Generating..." : "Generate Brief"}
+          {loading ? "PROCESSING..." : "Generate"}
         </button>
       </div>
 
       {latest ? (
-        <article className="neo-inset bg-gray-100 p-3">
-          <p className="text-[11px] text-black/55">
-            {formatDateTime(latest.createdAt)}
-          </p>
-          <p className="mt-1 text-sm text-black/85">{latest.summary}</p>
-          <div className="mt-2 grid gap-2 text-xs sm:grid-cols-2">
+        <article className="neo-inset bg-gray-100 p-4">
+          <div className="flex items-center justify-between mb-3 border-b-2 border-black pb-2">
+            <span className="font-mono text-[10px] uppercase text-black/50">
+              {formatDateTime(latest.createdAt)}
+            </span>
+            <span className="neo-pill neo-pill-accent">ACTIVE</span>
+          </div>
+          <p className="text-sm text-black/85 font-medium mb-4">{latest.summary}</p>
+          
+          <div className="grid gap-3 text-xs">
             <div>
-              <p className="mb-1 text-black/65">Top risks</p>
-              <ul className="list-disc space-y-1 pl-4 text-black/80">
-                {latest.topRisks.map((item) => (
-                  <li key={item}>{item}</li>
+              <p className="mb-2 font-mono text-[10px] uppercase text-black/50 border-b border-black/20 pb-1">
+                Top_Risks
+              </p>
+              <ul className="space-y-1">
+                {latest.topRisks.slice(0, 3).map((item, i) => (
+                  <li key={i} className="flex items-start gap-2 text-black/80">
+                    <span className="text-[var(--color-alert)] font-bold">{String(i + 1).padStart(2, "0")}</span>
+                    <span className="uppercase">{item}</span>
+                  </li>
                 ))}
               </ul>
             </div>
             <div>
-              <p className="mb-1 text-black/65">Action checklist</p>
-              <ul className="list-disc space-y-1 pl-4 text-black/80">
-                {latest.actionChecklist.map((item) => (
-                  <li key={item}>{item}</li>
+              <p className="mb-2 font-mono text-[10px] uppercase text-black/50 border-b border-black/20 pb-1">
+                Actions
+              </p>
+              <ul className="space-y-1">
+                {latest.actionChecklist.slice(0, 3).map((item, i) => (
+                  <li key={i} className="flex items-start gap-2 text-black/80">
+                    <span className="text-[var(--color-accent)] font-bold">☐</span>
+                    <span className="uppercase">{item}</span>
+                  </li>
                 ))}
               </ul>
             </div>
           </div>
         </article>
       ) : (
-        <p className="text-sm text-black/65">
-          No brief yet. Generate one to summarize fleet risk and next actions.
-        </p>
+        <div className="neo-inset bg-gray-100 p-6 text-center">
+          <div className="text-3xl mb-2">◉</div>
+          <p className="font-mono text-xs uppercase text-black/50">
+            No brief available.
+          </p>
+          <p className="font-mono text-[10px] uppercase text-black/30 mt-1">
+            Generate to receive fleet briefing.
+          </p>
+        </div>
       )}
     </GlassCard>
   );

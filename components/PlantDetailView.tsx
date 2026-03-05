@@ -1,5 +1,6 @@
 "use client";
 
+import { Activity, ArrowLeft, Terminal } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -12,7 +13,7 @@ import { PersonaPanel } from "@/components/panels/PersonaPanel";
 import { PlantInbox } from "@/components/panels/PlantInbox";
 import { RecipeModePanel } from "@/components/panels/RecipeModePanel";
 import { TimeTravelPanel } from "@/components/panels/TimeTravelPanel";
-import { GlassCard } from "@/components/ui/Glass";
+import { GlassCard, Pill } from "@/components/ui/Glass";
 import { PanelErrorBoundary } from "@/components/ui/PanelErrorBoundary";
 import { useAppStore } from "@/lib/store";
 import type { TimeTravelControls } from "@/types/domain";
@@ -62,12 +63,14 @@ export function PlantDetailView({ plantId }: { plantId: string }) {
   if (!hydrated) {
     return (
       <AppShell
-        title="Plant Detail"
-        subtitle="Loading telemetry and context..."
+        title="Unit Detail"
+        subtitle="Loading telemetry and biological context..."
       >
-        <GlassCard>
-          <p className="text-sm text-black/65">Loading...</p>
-        </GlassCard>
+        <div className="neo-box bg-white p-8 text-center">
+          <div className="font-mono text-sm uppercase tracking-wider">
+            <span className="cursor-blink">LOADING TELEMETRY...</span>
+          </div>
+        </div>
       </AppShell>
     );
   }
@@ -75,40 +78,82 @@ export function PlantDetailView({ plantId }: { plantId: string }) {
   if (!plant) {
     return (
       <AppShell
-        title="Plant Detail"
-        subtitle="Plant not found in local datastore."
+        title="Unit Not Found"
+        subtitle="Biological unit unavailable in datastore."
       >
-        <GlassCard>
-          <p className="text-sm text-black/65">
-            The requested plant ID is unavailable.
+        <div className="neo-box bg-white p-8 text-center">
+          <div className="text-4xl mb-4">◉</div>
+          <p className="font-mono text-sm uppercase text-black/65">
+            Unit ID not found.
           </p>
           <Link
             href="/"
-            className="neo-box neo-button mt-3 inline-block"
+            className="neo-box neo-button mt-6 inline-flex items-center gap-2"
           >
-            Back to fleet
+            <ArrowLeft size={14} />
+            Return to Fleet
           </Link>
-        </GlassCard>
+        </div>
       </AppShell>
     );
   }
 
   return (
     <AppShell
-      title={`${plant.name} Detail`}
-      subtitle={`${plant.species} • ${plant.zone} • ${plant.stage}`}
+      title={`${plant.name} // DETAIL_VIEW`}
+      subtitle={`${plant.species.toUpperCase()} • ${plant.zone.toUpperCase()} • ${plant.stage.toUpperCase()}`}
+      rightActions={
+        <Link
+          href="/"
+          className="neo-box neo-button flex items-center gap-2"
+        >
+          <ArrowLeft size={14} />
+          Back to Fleet
+        </Link>
+      }
     >
-      <div className="grid gap-4 xl:grid-cols-[1.5fr_1fr]">
-        <div className="space-y-4">
+      {/* Unit Status Header */}
+      <div className="neo-box bg-black text-white p-4 mb-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Terminal size={20} className="text-[var(--color-accent)]" />
+            <span className="font-mono text-xs uppercase text-[var(--color-accent)]">
+              Unit ID //
+            </span>
+            <span className="font-black text-xl uppercase tracking-tight">
+              {plant.name}
+            </span>
+            <span className="neo-pill bg-white text-black">
+              {plant.species}
+            </span>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Activity size={16} className="text-[var(--color-accent)]" />
+              <span className="font-mono text-xs uppercase">
+                Health: {plant.healthScore}%
+              </span>
+            </div>
+            <span className="status-dot active" />
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
+        <div className="space-y-6">
+          {/* Telemetry Chart */}
           <GlassCard>
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-semibold">Telemetry Timeline</h3>
+            <div className="panel-header">
+              <div className="flex items-center gap-2">
+                <Activity size={15} className="text-[var(--color-info)]" />
+                <h3 className="panel-title">Telemetry_Timeline</h3>
+              </div>
               <select
                 value={metric}
                 onChange={(e) =>
                   setMetric(e.currentTarget.value as (typeof metrics)[number])
                 }
-                className="neo-input px-2 py-1 text-xs"
+                className="neo-input px-3 py-1.5 text-xs"
               >
                 {metrics.map((m) => (
                   <option key={m} value={m}>
@@ -118,6 +163,26 @@ export function PlantDetailView({ plantId }: { plantId: string }) {
               </select>
             </div>
             <SensorChart readings={readings.slice(-80)} metric={metric} />
+            
+            {/* Latest Metrics */}
+            <div className="mt-4 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
+              <div className="neo-inset p-3 text-center">
+                <div className="text-[10px] font-mono uppercase opacity-50 mb-1">pH_Lvl</div>
+                <div className="text-xl font-black seven-seg">{latest?.pH.toFixed(2) ?? "--"}</div>
+              </div>
+              <div className="neo-inset p-3 text-center bg-[var(--color-accent)]">
+                <div className="text-[10px] font-mono uppercase mb-1">TDS</div>
+                <div className="text-xl font-black seven-seg">{latest ? Math.round(latest.tds) : "--"}</div>
+              </div>
+              <div className="neo-inset p-3 text-center">
+                <div className="text-[10px] font-mono uppercase opacity-50 mb-1">DO</div>
+                <div className="text-xl font-black seven-seg">{latest?.do.toFixed(1) ?? "--"}</div>
+              </div>
+              <div className="neo-inset p-3 text-center">
+                <div className="text-[10px] font-mono uppercase opacity-50 mb-1">TEMP</div>
+                <div className="text-xl font-black seven-seg">{latest?.tempC.toFixed(1) ?? "--"}°C</div>
+              </div>
+            </div>
           </GlassCard>
 
           <PanelErrorBoundary panel="anomalies" plantId={plantId}>
@@ -135,7 +200,7 @@ export function PlantDetailView({ plantId }: { plantId: string }) {
           </PanelErrorBoundary>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
           <PanelErrorBoundary panel="persona" plantId={plantId}>
             <PersonaPanel
               messages={personaByPlant[plantId] ?? []}

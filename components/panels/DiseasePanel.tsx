@@ -1,5 +1,6 @@
 "use client";
 
+import { AlertTriangle, Scan, Upload } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -35,15 +36,19 @@ export function DiseasePanel({
 
   return (
     <GlassCard>
-      <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-black">
-          Disease Triage (Mocked model + LLM plan)
-        </h3>
-        <Pill>{plantId.slice(-6)}</Pill>
+      <div className="panel-header">
+        <div className="flex items-center gap-2">
+          <Scan size={15} className="text-[var(--color-alert)]" />
+          <h3 className="panel-title">Disease_Triage</h3>
+        </div>
+        <Pill className="neo-pill">{plantId.slice(-6)}</Pill>
       </div>
 
-      <label className="neo-inset mb-3 flex cursor-pointer items-center justify-center border-dashed bg-gray-100 p-4 text-sm text-black/70 hover:bg-gray-200">
-        Upload or capture leaf image
+      <label className="neo-inset mb-3 flex cursor-pointer items-center justify-center border-dashed border-2 bg-gray-100 p-4 text-sm hover:bg-gray-200 transition-colors group">
+        <div className="flex flex-col items-center gap-2 text-black/70">
+          <Upload size={24} className="group-hover:text-[var(--color-accent)] transition-colors" />
+          <span className="font-mono text-xs uppercase">Upload or capture leaf image</span>
+        </div>
         <input
           type="file"
           accept="image/*"
@@ -67,7 +72,7 @@ export function DiseasePanel({
       </label>
 
       {preview ? (
-        <div className="mb-3 overflow-hidden neo-inset">
+        <div className="mb-3 overflow-hidden neo-inset border-2">
           <Image
             src={preview}
             alt="Plant sample"
@@ -81,7 +86,7 @@ export function DiseasePanel({
       <button
         type="button"
         disabled={!preview || loading}
-        className="neo-box neo-button neo-button-accent disabled:cursor-not-allowed disabled:opacity-50"
+        className="neo-box neo-button neo-button-accent w-full disabled:cursor-not-allowed disabled:opacity-50 flex items-center justify-center gap-2"
         onClick={async () => {
           if (!preview) {
             return;
@@ -98,33 +103,54 @@ export function DiseasePanel({
           }
         }}
       >
-        {loading ? "Running mocked analysis..." : "Analyze image"}
+        <Scan size={14} />
+        {loading ? "ANALYZING..." : "Analyze Image"}
       </button>
 
-      <div className="mt-4 space-y-2">
-        {scans
-          .slice()
-          .reverse()
-          .slice(0, 3)
-          .map((scan) => (
-            <article
-              key={scan.id}
-              className="neo-inset bg-gray-100 p-3"
-            >
-              <div className="mb-1 flex items-center justify-between text-xs">
-                <p className="font-medium text-black">{scan.mockLabel}</p>
-                <p className="text-black/65">
-                  Confidence {Math.round(scan.confidence * 100)}%
-                </p>
-              </div>
-              <p className="text-sm text-black/75">{scan.llmNarrative}</p>
-              <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-black/70">
-                {scan.treatmentPlan.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </article>
-          ))}
+      <div className="mt-4 space-y-3">
+        {scans.length === 0 ? (
+          <div className="neo-inset bg-gray-100 p-4 text-center">
+            <p className="font-mono text-xs uppercase text-black/50">
+              No scans yet.
+            </p>
+          </div>
+        ) : (
+          scans
+            .slice()
+            .reverse()
+            .slice(0, 3)
+            .map((scan, index) => (
+              <article
+                key={scan.id}
+                className={`neo-inset p-3 ${scan.confidence > 0.7 ? "border-alert-glow" : ""}`}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-[var(--color-alert)] font-black">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  {scan.confidence > 0.7 && (
+                    <AlertTriangle size={14} className="text-[var(--color-alert)]" />
+                  )}
+                  <p className="font-black uppercase text-sm">{scan.mockLabel}</p>
+                  <span className="ml-auto font-mono text-[10px] bg-black text-white px-2 py-1">
+                    {Math.round(scan.confidence * 100)}%
+                  </span>
+                </div>
+                <p className="text-sm text-black/75 mb-2 font-mono text-xs uppercase">{scan.llmNarrative}</p>
+                <div className="border-t border-black/20 pt-2">
+                  <p className="text-[10px] font-mono uppercase text-black/50 mb-1">Treatment Plan:</p>
+                  <ul className="space-y-1">
+                    {scan.treatmentPlan.map((item, i) => (
+                      <li key={item} className="flex items-start gap-2 text-xs">
+                        <span className="text-[var(--color-accent)] font-bold">☐</span>
+                        <span className="uppercase">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </article>
+            ))
+        )}
       </div>
     </GlassCard>
   );
