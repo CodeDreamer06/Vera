@@ -200,7 +200,7 @@ export function FleetDashboard() {
           </button>
           <button
             type="button"
-            className="neo-box neo-button-dark text-white font-black"
+            className="neo-box neo-button-dark text-white font-black p-2"
             onClick={() => setPaletteOpen(true)}
           >
             ⌘_Palette
@@ -307,7 +307,7 @@ export function FleetDashboard() {
                     Alert
                   </div>
                 </div>
-                <div className="neo-box p-4 text-center col-span-2 bg-[var(--color-info)] text-white border-black">
+                <div className="neo-box p-4 text-center col-span-2 bg-[var(--color-info)] border-black">
                   <div className="flex justify-between items-center">
                     <span className="font-mono text-xs uppercase">LLM Status</span>
                     <span className="text-xl font-black">ONLINE</span>

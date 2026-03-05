@@ -118,7 +118,7 @@ export function AppShell({
                   <div className="mb-4 inline-block border-2 border-white bg-black px-3 py-1 font-mono text-xs font-bold uppercase tracking-[0.18em] text-white shadow-[2px_2px_0_0_rgba(0,0,0,1)]">
                     Hydroponic_Division
                   </div>
-                  <h2 className="glitch font-display text-4xl font-black uppercase leading-[0.88] tracking-tighter md:text-6xl">
+                  <h2 className="font-display text-4xl font-black uppercase leading-[0.88] tracking-tighter md:text-6xl">
                     {title}
                   </h2>
                   <p className="mt-3 border-l-4 border-black pl-4 font-mono text-xs uppercase leading-relaxed text-black/75 md:text-sm">

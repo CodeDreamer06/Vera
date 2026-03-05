@@ -83,7 +83,7 @@ export function PlantCard({
               <button
                 type="button"
                 onClick={onFocus}
-                className="glitch text-left text-2xl font-black uppercase tracking-tight mb-1 block"
+                className="text-left text-2xl font-black uppercase tracking-tight mb-1 block"
               >
                 {plant.name}
               </button>
