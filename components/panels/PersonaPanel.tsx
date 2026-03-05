@@ -24,12 +24,12 @@ export function PersonaPanel({
   return (
     <GlassCard>
       <div className="mb-3 flex items-center justify-between gap-3">
-        <h3 className="text-sm font-semibold text-white">
+        <h3 className="text-sm font-semibold text-black">
           Sentient Plant Persona
         </h3>
         <button
           type="button"
-          className="rounded-lg border border-cyan-400/35 bg-cyan-500/15 px-3 py-1.5 text-xs text-cyan-100 hover:bg-cyan-500/25"
+          className="neo-box neo-button neo-button-info"
           onClick={onRefresh}
         >
           Refresh Persona
@@ -42,10 +42,10 @@ export function PersonaPanel({
             key={item}
             type="button"
             onClick={() => onTone(item)}
-            className={`rounded-full border px-2.5 py-1 text-xs transition ${
+            className={`neo-pill transition ${
               tone === item
-                ? "border-emerald-300/60 bg-emerald-500/20 text-emerald-100"
-                : "border-white/15 bg-white/5 text-white/70 hover:bg-white/10"
+                ? "bg-[var(--color-accent)]"
+                : "bg-white"
             }`}
           >
             {item}
@@ -59,18 +59,18 @@ export function PersonaPanel({
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2 }}
-          className="rounded-xl border border-white/10 bg-white/[0.03] p-3"
+          className="neo-inset bg-gray-100 p-3"
         >
           <div className="mb-2 flex items-center justify-between">
             <Pill>{latest.state}</Pill>
-            <span className="text-[11px] text-white/50">
+            <span className="text-[11px] text-black/50">
               {formatDateTime(latest.timestamp)}
             </span>
           </div>
-          <p className="text-sm text-white/85">{latest.message}</p>
+          <p className="text-sm text-black/85">{latest.message}</p>
         </motion.div>
       ) : (
-        <p className="text-sm text-white/60">
+        <p className="text-sm text-black/65">
           Generate a persona update to begin message history.
         </p>
       )}

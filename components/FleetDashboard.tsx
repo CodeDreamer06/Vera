@@ -169,7 +169,7 @@ export function FleetDashboard() {
         <>
           <button
             type="button"
-            className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs hover:bg-white/10"
+            className="neo-box neo-button"
             onClick={() =>
               startDemoMode(Number(process.env.NEXT_PUBLIC_MAX_PLANTS ?? 10))
             }
@@ -178,7 +178,7 @@ export function FleetDashboard() {
           </button>
           <button
             type="button"
-            className="rounded-lg border border-amber-300/35 bg-amber-500/15 px-3 py-1.5 text-xs text-amber-100 hover:bg-amber-500/25"
+            className="neo-box neo-button neo-button-accent"
             onClick={async () => {
               setOpsLoading(true);
               try {
@@ -195,7 +195,7 @@ export function FleetDashboard() {
           </button>
           <button
             type="button"
-            className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs hover:bg-white/10"
+            className="neo-box neo-button"
             onClick={() => setPaletteOpen(true)}
           >
             Command Palette
@@ -205,7 +205,7 @@ export function FleetDashboard() {
     >
       {loading ? (
         <GlassCard>
-          <p className="text-sm text-white/70">
+          <p className="text-sm text-black/65">
             Initializing telemetry fabric...
           </p>
         </GlassCard>
@@ -220,10 +220,10 @@ export function FleetDashboard() {
             <GlassCard>
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <Sparkles size={15} className="text-cyan-300" />
+                  <Sparkles size={15} className="text-[var(--color-info)]" />
                   <h3 className="text-sm font-semibold">Multi-Plant Monitor</h3>
                   {recipeMode ? (
-                    <Pill className="border-emerald-300/30 bg-emerald-500/15 text-emerald-100">
+                    <Pill className="bg-[var(--color-accent)]">
                       Recipe mode active
                     </Pill>
                   ) : null}
@@ -233,7 +233,7 @@ export function FleetDashboard() {
                   value={search}
                   onChange={(e) => setSearch(e.currentTarget.value)}
                   placeholder="Search plant, species, zone"
-                  className="w-full max-w-sm rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-sm outline-none ring-cyan-300/40 placeholder:text-white/40 focus:ring"
+                  className="neo-input w-full max-w-sm px-3 py-1.5 text-sm outline-none focus:ring"
                 />
               </div>
 
@@ -281,10 +281,10 @@ export function FleetDashboard() {
                   <GlassCard>
                     <div className="mb-3 flex items-center justify-between gap-2">
                       <div>
-                        <h3 className="text-sm font-semibold text-white">
+                        <h3 className="text-sm font-semibold text-black">
                           Live Telemetry • {activePlant.name}
                         </h3>
-                        <p className="text-xs text-white/60">
+                        <p className="text-xs text-black/65">
                           Incoming simulated data with noise, drift, and
                           anomalies
                         </p>
@@ -298,10 +298,10 @@ export function FleetDashboard() {
                               .value as (typeof chartMetrics)[number],
                           )
                         }
-                        className="rounded-lg border border-white/15 bg-white/5 px-2 py-1 text-xs"
+                        className="neo-input px-2 py-1 text-xs"
                       >
                         {chartMetrics.map((m) => (
-                          <option key={m} value={m} className="bg-slate-900">
+                          <option key={m} value={m}>
                             {m}
                           </option>
                         ))}
@@ -314,17 +314,17 @@ export function FleetDashboard() {
                     />
 
                     <div className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
-                      <div className="rounded-lg bg-white/5 p-2">
+                      <div className="neo-inset p-2">
                         pH {latestReading?.pH.toFixed(2) ?? "--"}
                       </div>
-                      <div className="rounded-lg bg-white/5 p-2">
+                      <div className="neo-inset p-2">
                         TDS{" "}
                         {latestReading ? Math.round(latestReading.tds) : "--"}
                       </div>
-                      <div className="rounded-lg bg-white/5 p-2">
+                      <div className="neo-inset p-2">
                         DO {latestReading?.do.toFixed(1) ?? "--"}
                       </div>
-                      <div className="rounded-lg bg-white/5 p-2">
+                      <div className="neo-inset p-2">
                         Temp {latestReading?.tempC.toFixed(1) ?? "--"}°C
                       </div>
                     </div>
@@ -441,8 +441,8 @@ export function FleetDashboard() {
 
                 <GlassCard>
                   <div className="mb-2 flex items-center gap-2">
-                    <Bot size={15} className="text-cyan-300" />
-                    <h3 className="text-sm font-semibold text-white">
+                    <Bot size={15} className="text-[var(--color-info)]" />
+                    <h3 className="text-sm font-semibold text-black">
                       Predictive Watch
                     </h3>
                   </div>
@@ -458,13 +458,13 @@ export function FleetDashboard() {
                     .map((alert) => (
                       <div
                         key={alert.id}
-                        className="mb-2 rounded-xl border border-amber-400/30 bg-amber-500/10 p-3"
+                        className="neo-box mb-2 bg-[var(--color-accent)] p-3"
                       >
-                        <div className="mb-1 flex items-center gap-2 text-amber-100">
+                        <div className="mb-1 flex items-center gap-2 text-black">
                           <TriangleAlert size={14} />
                           <p className="text-xs font-medium">{alert.title}</p>
                         </div>
-                        <p className="text-xs text-amber-50/90">
+                        <p className="text-xs text-black/75">
                           {alert.description}
                         </p>
                       </div>
@@ -474,7 +474,7 @@ export function FleetDashboard() {
             </motion.div>
           ) : (
             <GlassCard>
-              <p className="text-sm text-white/70">No plants seeded yet.</p>
+              <p className="text-sm text-black/65">No plants seeded yet.</p>
             </GlassCard>
           )}
         </>

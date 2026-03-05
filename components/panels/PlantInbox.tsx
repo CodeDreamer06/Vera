@@ -15,14 +15,14 @@ export function PlantInbox({
 }) {
   return (
     <GlassCard>
-      <h3 className="mb-3 text-sm font-semibold text-white">Plant Inbox</h3>
+      <h3 className="mb-3 text-sm font-semibold text-black">Plant Inbox</h3>
 
       <div className="mb-3 flex flex-wrap gap-2">
         {chips.map((chip) => (
           <button
             key={chip}
             type="button"
-            className="rounded-full border border-white/15 bg-white/5 px-2.5 py-1 text-xs text-white/80 hover:bg-white/10"
+            className="neo-pill bg-gray-100 hover:bg-[var(--color-accent)]"
             onClick={() => onReply(chip)}
           >
             {chip}
@@ -38,13 +38,13 @@ export function PlantInbox({
           .map((message) => (
             <article
               key={message.id}
-              className="rounded-xl border border-white/10 bg-white/[0.03] p-2.5"
+              className="neo-inset bg-gray-100 p-2.5"
             >
-              <div className="mb-1 flex items-center justify-between text-[11px] text-white/55">
+              <div className="mb-1 flex items-center justify-between text-[11px] text-black/55">
                 <span>{message.role}</span>
                 <span>{formatDateTime(message.createdAt)}</span>
               </div>
-              <p className="text-xs text-white/80">{message.text}</p>
+              <p className="text-xs text-black/80">{message.text}</p>
             </article>
           ))}
       </div>

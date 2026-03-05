@@ -14,12 +14,12 @@ import {
 import type { SensorReading } from "@/types/domain";
 
 const metricColor: Record<string, string> = {
-  pH: "#3b82f6",
-  tds: "#14b8a6",
-  do: "#22c55e",
-  tempC: "#fb923c",
-  humidity: "#06b6d4",
-  soilMoisture: "#a3e635",
+  pH: "#2a2aff",
+  tds: "#000000",
+  do: "#00a652",
+  tempC: "#ff7a00",
+  humidity: "#0b8cff",
+  soilMoisture: "#6b8500",
 };
 
 interface SensorChartProps {
@@ -54,24 +54,25 @@ export const SensorChart = memo(function SensorChart({
           margin={{ top: 4, right: 10, left: -10, bottom: 0 }}
         >
           <CartesianGrid
-            stroke="rgba(255,255,255,0.08)"
-            strokeDasharray="3 3"
+            stroke="rgba(0,0,0,0.18)"
+            strokeDasharray="2 2"
           />
           <XAxis
             dataKey="t"
-            tick={{ fill: "rgba(255,255,255,0.7)", fontSize: 10 }}
+            tick={{ fill: "rgba(0,0,0,0.8)", fontSize: 10 }}
             tickMargin={8}
           />
           <YAxis
-            tick={{ fill: "rgba(255,255,255,0.7)", fontSize: 10 }}
+            tick={{ fill: "rgba(0,0,0,0.8)", fontSize: 10 }}
             width={32}
           />
           <Tooltip
             contentStyle={{
-              borderRadius: "12px",
-              border: "1px solid rgba(255,255,255,0.15)",
-              background: "rgba(12,15,27,0.94)",
-              color: "#fff",
+              borderRadius: "0",
+              border: "3px solid #000",
+              boxShadow: "6px 6px 0 #000",
+              background: "#fff",
+              color: "#000",
             }}
           />
           <Line

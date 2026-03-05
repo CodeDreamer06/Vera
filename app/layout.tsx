@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { JetBrains_Mono, Manrope, Space_Grotesk } from "next/font/google";
+import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
 import { Toaster } from "sonner";
 
 import { ThemeBoot } from "@/components/layout/ThemeBoot";
@@ -10,18 +10,19 @@ const display = Space_Grotesk({
   subsets: ["latin"],
 });
 
-const body = Manrope({
+const body = Space_Grotesk({
   variable: "--font-body",
   subsets: ["latin"],
 });
 
-const mono = JetBrains_Mono({
+const mono = IBM_Plex_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
+  weight: ["400", "500", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "Vera Command Center",
+  title: "VERA // NEO_BRUTALIST_V2.0",
   description:
     "Offline-first hydroponic command center with LLM-powered plant intelligence.",
 };
@@ -38,7 +39,7 @@ export default function RootLayout({
       >
         <ThemeBoot />
         {children}
-        <Toaster theme="dark" position="top-right" richColors />
+        <Toaster theme="light" position="top-right" richColors />
       </body>
     </html>
   );

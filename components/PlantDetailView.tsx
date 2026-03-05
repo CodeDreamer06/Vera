@@ -66,7 +66,7 @@ export function PlantDetailView({ plantId }: { plantId: string }) {
         subtitle="Loading telemetry and context..."
       >
         <GlassCard>
-          <p className="text-sm text-white/70">Loading...</p>
+          <p className="text-sm text-black/65">Loading...</p>
         </GlassCard>
       </AppShell>
     );
@@ -79,12 +79,12 @@ export function PlantDetailView({ plantId }: { plantId: string }) {
         subtitle="Plant not found in local datastore."
       >
         <GlassCard>
-          <p className="text-sm text-white/70">
+          <p className="text-sm text-black/65">
             The requested plant ID is unavailable.
           </p>
           <Link
             href="/"
-            className="mt-3 inline-block rounded-lg border border-white/15 px-3 py-1.5 text-xs"
+            className="neo-box neo-button mt-3 inline-block"
           >
             Back to fleet
           </Link>
@@ -108,10 +108,10 @@ export function PlantDetailView({ plantId }: { plantId: string }) {
                 onChange={(e) =>
                   setMetric(e.currentTarget.value as (typeof metrics)[number])
                 }
-                className="rounded-lg border border-white/15 bg-white/5 px-2 py-1 text-xs"
+                className="neo-input px-2 py-1 text-xs"
               >
                 {metrics.map((m) => (
-                  <option key={m} value={m} className="bg-slate-900">
+                  <option key={m} value={m}>
                     {m}
                   </option>
                 ))}

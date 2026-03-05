@@ -20,18 +20,42 @@ export function AppShell({
   const pathname = usePathname();
 
   const nav = [
-    { href: "/", label: "Command Center", icon: Leaf },
-    { href: "/settings", label: "Settings", icon: Settings },
+    { href: "/", label: "Command", icon: Leaf, slot: "01" },
+    { href: "/settings", label: "Settings", icon: Settings, slot: "02" },
   ];
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_right,rgba(6,182,212,0.16),transparent_32%),radial-gradient(circle_at_top_left,rgba(34,197,94,0.1),transparent_28%),#060913] text-white">
-      <div className="mx-auto grid w-full max-w-[1500px] gap-4 p-4 lg:grid-cols-[220px_1fr]">
-        <aside className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur">
-          <h1 className="mb-4 font-display text-lg font-semibold tracking-tight">
-            Vera
-          </h1>
-          <nav className="space-y-1">
+    <div className="min-h-screen bg-[var(--color-bg)] text-black">
+      <div className="scanlines" />
+      <div className="crt-flicker" />
+
+      <div className="marquee-container relative z-50 border-b-[3px] border-black bg-[var(--color-accent)] py-2">
+        <div className="marquee-content flex gap-8 font-mono text-xs font-bold uppercase tracking-[0.2em]">
+          <span>System nominal // Fleet online</span>
+          <span>pH levels monitored</span>
+          <span>TDS tracking active</span>
+          <span>LLM copilot standby</span>
+          <span>System nominal // Fleet online</span>
+          <span>pH levels monitored</span>
+          <span>TDS tracking active</span>
+          <span>LLM copilot standby</span>
+        </div>
+      </div>
+
+      <div className="flex min-h-[calc(100vh-42px)]">
+        <aside className="fixed top-[42px] z-40 hidden h-[calc(100vh-42px)] w-72 flex-col overflow-y-auto border-r-[3px] border-black bg-white lg:flex">
+          <div className="relative overflow-hidden border-b-[3px] border-black bg-black p-8 text-white">
+            <div className="absolute -right-10 -top-10 h-20 w-20 rotate-45 bg-white opacity-10" />
+            <h1 className="glitch mb-1 text-5xl font-black tracking-tighter">
+              VERA
+            </h1>
+            <div className="flex items-center gap-2 font-mono text-xs uppercase text-[var(--color-accent)]">
+              <span className="status-dot active animate-pulse" />
+              v2.0.4_brutalist
+            </div>
+          </div>
+
+          <nav className="flex-1 py-2">
             {nav.map((item) => {
               const Icon = item.icon;
               const active = pathname === item.href;
@@ -39,47 +63,80 @@ export function AppShell({
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition ${
+                  className={`m-0 mb-[3px] flex w-full items-center justify-between border-b-[3px] border-black px-6 py-5 text-left font-black uppercase tracking-wide ${
                     active
-                      ? "bg-emerald-500/20 text-emerald-100"
-                      : "text-white/75 hover:bg-white/10"
+                      ? "neo-box rounded-none border-0 bg-[var(--color-accent)] shadow-none"
+                      : "bg-white text-gray-600 hover:bg-gray-100"
                   }`}
                 >
-                  <Icon size={15} />
-                  {item.label}
+                  <span className="flex items-center gap-3">
+                    <Icon size={18} />
+                    {item.label}
+                  </span>
+                  <span className="font-mono text-xs opacity-45">{item.slot}</span>
                 </Link>
               );
             })}
           </nav>
 
-          <div className="mt-6 space-y-2 text-xs text-white/65">
-            <p>Command shortcuts:</p>
-            <Pill className="w-full justify-center gap-1">
-              <Command size={11} /> Ctrl/Cmd+K
-            </Pill>
-            <Pill className="w-full justify-center gap-1">
-              <Bell size={11} /> A
-            </Pill>
+          <div className="border-t-[3px] border-black bg-gray-200 p-6">
+            <div className="mb-3 font-mono text-xs font-bold uppercase opacity-60">
+              Shortcuts
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <Pill className="justify-center border-2 px-0 py-2 text-sm">
+                <Command size={13} className="mr-1" />K
+              </Pill>
+              <Pill className="justify-center border-2 px-0 py-2 text-sm">
+                <Bell size={13} className="mr-1" />A
+              </Pill>
+            </div>
+            <div className="mt-4 font-mono text-[10px] uppercase leading-normal text-gray-600">
+              {"> Press CMD+K for"}
+              <br />
+              {"> Command Palette"}
+            </div>
+          </div>
+
+          <div className="border-t-[3px] border-[var(--color-accent)] bg-black p-4 font-mono text-[10px] uppercase text-white">
+            <div className="mb-1 flex justify-between">
+              <span>Mem</span>
+              <span>64TB</span>
+            </div>
+            <div className="h-2 w-full border border-white">
+              <div className="h-full w-3/4 border-r border-white bg-[var(--color-accent)]" />
+            </div>
           </div>
         </aside>
 
-        <main className="space-y-4">
-          <header className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-white/55">
-                  Hydroponic Command Center
-                </p>
-                <h2 className="mt-1 font-display text-2xl font-semibold tracking-tight">
-                  {title}
-                </h2>
-                <p className="text-sm text-white/65">{subtitle}</p>
-              </div>
-              <div className="flex items-center gap-2">{rightActions}</div>
-            </div>
-          </header>
+        <main className="grid-bg relative flex-1 p-4 md:p-8 lg:ml-72">
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[var(--color-bg)] via-transparent to-[var(--color-bg)] opacity-70" />
 
-          {children}
+          <div className="relative z-10 mx-auto max-w-[1450px] space-y-6">
+            <header className="neo-box neo-card relative overflow-hidden bg-white p-6 md:p-8">
+              <div className="absolute left-0 top-0 h-2 w-full bg-black" />
+              <div className="absolute -right-10 -top-10 h-40 w-40 rotate-12 border-4 border-black bg-[var(--color-accent)] opacity-20 transition-transform duration-700 hover:rotate-45" />
+
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <div className="lg:w-2/3">
+                  <div className="mb-4 inline-block border-2 border-white bg-black px-3 py-1 font-mono text-xs font-bold uppercase tracking-[0.18em] text-white shadow-[2px_2px_0_0_rgba(0,0,0,1)]">
+                    Hydroponic_Division
+                  </div>
+                  <h2 className="glitch font-display text-4xl font-black uppercase tracking-tighter leading-[0.88] md:text-6xl">
+                    {title}
+                  </h2>
+                  <p className="mt-3 border-l-4 border-black pl-4 font-mono text-xs uppercase leading-relaxed text-black/75 md:text-sm">
+                    {subtitle}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-3 lg:w-1/3 lg:justify-end">
+                  {rightActions}
+                </div>
+              </div>
+            </header>
+
+            {children}
+          </div>
         </main>
       </div>
     </div>

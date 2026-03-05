@@ -22,7 +22,7 @@ export function AnomalyFeed({
 
   return (
     <GlassCard>
-      <h3 className="mb-3 text-sm font-semibold text-white">
+      <h3 className="mb-3 text-sm font-semibold text-black">
         Anomaly Feed + Root-Cause Ranking
       </h3>
       <div className="space-y-2">
@@ -33,18 +33,18 @@ export function AnomalyFeed({
           .map((anomaly) => (
             <article
               key={anomaly.id}
-              className="rounded-xl border border-white/10 bg-white/[0.03] p-3"
+              className="neo-inset bg-gray-100 p-3"
             >
               <div className="flex items-center justify-between gap-2">
                 <div>
-                  <p className="text-sm text-white">{anomaly.patternType}</p>
-                  <p className="text-xs text-white/55">
+                  <p className="text-sm text-black">{anomaly.patternType}</p>
+                  <p className="text-xs text-black/55">
                     {anomaly.metric} · {formatDateTime(anomaly.detectedAt)}
                   </p>
                 </div>
                 <button
                   type="button"
-                  className="rounded-lg border border-white/15 px-2 py-1 text-[11px] text-white/80 hover:bg-white/10"
+                  className="neo-box neo-button px-2 py-1 text-[11px]"
                   onClick={async () => {
                     setExpanded(anomaly.id);
                     if (!explanations[anomaly.id]) {
@@ -64,10 +64,10 @@ export function AnomalyFeed({
                   Explain spike
                 </button>
               </div>
-              <p className="mt-2 text-xs text-white/70">{anomaly.notes}</p>
+              <p className="mt-2 text-xs text-black/70">{anomaly.notes}</p>
 
               {expanded === anomaly.id ? (
-                <div className="mt-2 rounded-lg border border-white/10 bg-black/20 p-2 text-xs text-white/80">
+                <div className="neo-inset mt-2 bg-white p-2 text-xs text-black/80">
                   {loadingId === anomaly.id ? (
                     <p>Generating root-cause narrative...</p>
                   ) : explanations[anomaly.id] ? (

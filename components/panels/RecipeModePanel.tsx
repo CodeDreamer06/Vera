@@ -52,29 +52,29 @@ export function RecipeModePanel({
 
   return (
     <GlassCard>
-      <h3 className="mb-2 text-sm font-semibold text-white">
+      <h3 className="mb-2 text-sm font-semibold text-black">
         Recipe Mode: {plant.stage}
       </h3>
-      <p className="mb-2 text-xs text-white/65">
+      <p className="mb-2 text-xs text-black/65">
         Stage targets pH {targets.pH[0]}-{targets.pH[1]} · TDS {targets.tds[0]}-
         {targets.tds[1]} · DO {targets.do[0]}-{targets.do[1]}
       </p>
 
       {rangeNotes.length > 0 ? (
-        <ul className="mb-2 list-disc space-y-1 pl-4 text-xs text-amber-100">
+        <ul className="mb-2 list-disc space-y-1 pl-4 text-xs text-[var(--color-alert)]">
           {rangeNotes.map((note) => (
             <li key={note}>{note}</li>
           ))}
         </ul>
       ) : (
-        <p className="mb-2 text-xs text-emerald-100">
+        <p className="mb-2 text-xs text-black/75">
           All tracked metrics are currently inside stage-safe margins.
         </p>
       )}
 
       <button
         type="button"
-        className="rounded-lg border border-cyan-400/35 bg-cyan-500/15 px-3 py-1.5 text-xs text-cyan-100 hover:bg-cyan-500/25"
+        className="neo-box neo-button neo-button-info"
         onClick={async () => {
           setLoading(true);
           try {
@@ -96,7 +96,7 @@ export function RecipeModePanel({
       </button>
 
       {narrative ? (
-        <p className="mt-2 text-sm text-white/80">{narrative}</p>
+        <p className="mt-2 text-sm text-black/80">{narrative}</p>
       ) : null}
     </GlassCard>
   );

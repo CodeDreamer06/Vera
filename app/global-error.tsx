@@ -11,7 +11,7 @@ export default function GlobalError({
 }) {
   return (
     <html lang="en">
-      <body className="bg-[#060913] text-white">
+      <body className="grid-bg text-black">
         <main className="mx-auto flex min-h-screen w-full max-w-3xl items-center justify-center p-6">
           <ErrorCard
             error={error}

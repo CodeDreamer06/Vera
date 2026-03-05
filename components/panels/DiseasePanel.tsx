@@ -36,13 +36,13 @@ export function DiseasePanel({
   return (
     <GlassCard>
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-white">
+        <h3 className="text-sm font-semibold text-black">
           Disease Triage (Mocked model + LLM plan)
         </h3>
         <Pill>{plantId.slice(-6)}</Pill>
       </div>
 
-      <label className="mb-3 flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-white/20 bg-white/5 p-4 text-sm text-white/70 hover:bg-white/10">
+      <label className="neo-inset mb-3 flex cursor-pointer items-center justify-center border-dashed bg-gray-100 p-4 text-sm text-black/70 hover:bg-gray-200">
         Upload or capture leaf image
         <input
           type="file"
@@ -67,7 +67,7 @@ export function DiseasePanel({
       </label>
 
       {preview ? (
-        <div className="mb-3 overflow-hidden rounded-xl border border-white/10">
+        <div className="mb-3 overflow-hidden neo-inset">
           <Image
             src={preview}
             alt="Plant sample"
@@ -81,7 +81,7 @@ export function DiseasePanel({
       <button
         type="button"
         disabled={!preview || loading}
-        className="rounded-lg border border-emerald-400/35 bg-emerald-500/15 px-3 py-1.5 text-xs text-emerald-100 hover:bg-emerald-500/25 disabled:cursor-not-allowed disabled:opacity-50"
+        className="neo-box neo-button neo-button-accent disabled:cursor-not-allowed disabled:opacity-50"
         onClick={async () => {
           if (!preview) {
             return;
@@ -109,16 +109,16 @@ export function DiseasePanel({
           .map((scan) => (
             <article
               key={scan.id}
-              className="rounded-xl border border-white/10 bg-white/[0.03] p-3"
+              className="neo-inset bg-gray-100 p-3"
             >
               <div className="mb-1 flex items-center justify-between text-xs">
-                <p className="font-medium text-white">{scan.mockLabel}</p>
-                <p className="text-white/60">
+                <p className="font-medium text-black">{scan.mockLabel}</p>
+                <p className="text-black/65">
                   Confidence {Math.round(scan.confidence * 100)}%
                 </p>
               </div>
-              <p className="text-sm text-white/75">{scan.llmNarrative}</p>
-              <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-white/70">
+              <p className="text-sm text-black/75">{scan.llmNarrative}</p>
+              <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-black/70">
                 {scan.treatmentPlan.map((item) => (
                   <li key={item}>{item}</li>
                 ))}

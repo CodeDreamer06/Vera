@@ -49,28 +49,28 @@ export function CommandPalette({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-4 pt-24 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 p-4 pt-24 backdrop-blur-sm">
       <Command
         label="Command Palette"
-        className="w-full max-w-xl overflow-hidden rounded-2xl border border-white/10 bg-[#090d1a] text-white shadow-2xl"
+        className="w-full max-w-xl overflow-hidden neo-box bg-white text-black shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <Command.Input
           autoFocus
           placeholder="Type a command or plant name..."
-          className="w-full border-b border-white/10 bg-transparent px-4 py-3 text-sm outline-none"
+          className="neo-input w-full border-b-[3px] border-black px-4 py-3 text-sm outline-none"
         />
         <Command.List className="max-h-[60vh] overflow-auto p-2">
-          <Command.Empty className="p-3 text-sm text-white/60">
+          <Command.Empty className="p-3 text-sm text-black/60">
             No results.
           </Command.Empty>
 
           <Command.Group
             heading="Actions"
-            className="px-2 text-xs text-white/50"
+            className="px-2 text-xs text-black/50"
           >
             <Command.Item
-              className="cursor-pointer rounded-lg px-3 py-2 text-sm data-[selected=true]:bg-white/10"
+              className="cursor-pointer border-2 border-transparent px-3 py-2 text-sm data-[selected=true]:border-black data-[selected=true]:bg-[var(--color-accent)]"
               onSelect={() => {
                 onOpenAlerts();
                 onOpenChange(false);
@@ -79,7 +79,7 @@ export function CommandPalette({
               Open alerts center
             </Command.Item>
             <Command.Item
-              className="cursor-pointer rounded-lg px-3 py-2 text-sm data-[selected=true]:bg-white/10"
+              className="cursor-pointer border-2 border-transparent px-3 py-2 text-sm data-[selected=true]:border-black data-[selected=true]:bg-[var(--color-accent)]"
               onSelect={() => {
                 onOpenDisease();
                 onOpenChange(false);
@@ -88,7 +88,7 @@ export function CommandPalette({
               Open disease panel
             </Command.Item>
             <Command.Item
-              className="cursor-pointer rounded-lg px-3 py-2 text-sm data-[selected=true]:bg-white/10"
+              className="cursor-pointer border-2 border-transparent px-3 py-2 text-sm data-[selected=true]:border-black data-[selected=true]:bg-[var(--color-accent)]"
               onSelect={() => {
                 onRunAnomaly();
                 onOpenChange(false);
@@ -97,7 +97,7 @@ export function CommandPalette({
               Inject demo anomaly
             </Command.Item>
             <Command.Item
-              className="cursor-pointer rounded-lg px-3 py-2 text-sm data-[selected=true]:bg-white/10"
+              className="cursor-pointer border-2 border-transparent px-3 py-2 text-sm data-[selected=true]:border-black data-[selected=true]:bg-[var(--color-accent)]"
               onSelect={() => {
                 onRunBrief();
                 onOpenChange(false);
@@ -106,7 +106,7 @@ export function CommandPalette({
               Generate operator briefing
             </Command.Item>
             <Command.Item
-              className="cursor-pointer rounded-lg px-3 py-2 text-sm data-[selected=true]:bg-white/10"
+              className="cursor-pointer border-2 border-transparent px-3 py-2 text-sm data-[selected=true]:border-black data-[selected=true]:bg-[var(--color-accent)]"
               onSelect={() => {
                 onOpenShortcuts();
                 onOpenChange(false);
@@ -115,7 +115,7 @@ export function CommandPalette({
               Show keyboard shortcuts
             </Command.Item>
             <Command.Item
-              className="cursor-pointer rounded-lg px-3 py-2 text-sm data-[selected=true]:bg-white/10"
+              className="cursor-pointer border-2 border-transparent px-3 py-2 text-sm data-[selected=true]:border-black data-[selected=true]:bg-[var(--color-accent)]"
               onSelect={() => {
                 router.push("/settings");
                 onOpenChange(false);
@@ -127,12 +127,12 @@ export function CommandPalette({
 
           <Command.Group
             heading="Plants"
-            className="mt-2 px-2 text-xs text-white/50"
+            className="mt-2 px-2 text-xs text-black/50"
           >
             {plants.map((plant) => (
               <Command.Item
                 key={plant.id}
-                className="cursor-pointer rounded-lg px-3 py-2 text-sm data-[selected=true]:bg-white/10"
+                className="cursor-pointer border-2 border-transparent px-3 py-2 text-sm data-[selected=true]:border-black data-[selected=true]:bg-[var(--color-accent)]"
                 onSelect={() => {
                   router.push(`/plants/${plant.id}`);
                   onOpenChange(false);

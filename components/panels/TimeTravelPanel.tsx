@@ -81,7 +81,7 @@ export function TimeTravelPanel({
   if (!latest) {
     return (
       <GlassCard>
-        <p className="text-sm text-white/70">
+        <p className="text-sm text-black/70">
           No telemetry yet for time travel simulation.
         </p>
       </GlassCard>
@@ -91,7 +91,7 @@ export function TimeTravelPanel({
   return (
     <GlassCard>
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-white">
+        <h3 className="text-sm font-semibold text-black">
           Time Travel Simulation
         </h3>
         {projection ? <Pill>Day +{controls.day}</Pill> : null}
@@ -102,7 +102,7 @@ export function TimeTravelPanel({
           <VisualState status={projection.status} />
 
           <div className="space-y-2">
-            <label className="text-xs text-white/70" htmlFor="time-travel-day">
+            <label className="text-xs text-black/70" htmlFor="time-travel-day">
               Horizon (days)
             </label>
             <input
@@ -129,7 +129,7 @@ export function TimeTravelPanel({
             ].map((item) => (
               <label
                 key={item.key}
-                className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-2 py-2"
+                className="flex items-center gap-2 rounded-lg border border-black bg-gray-100 px-2 py-2"
               >
                 <input
                   type="checkbox"
@@ -148,19 +148,19 @@ export function TimeTravelPanel({
             ))}
           </div>
 
-          <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
-            <p className="text-xs text-white/60">Projected vitality score</p>
-            <p className="text-2xl font-semibold text-white">
+          <div className="neo-inset bg-gray-100 p-3">
+            <p className="text-xs text-black/65">Projected vitality score</p>
+            <p className="text-2xl font-semibold text-black">
               {projection.score}
             </p>
-            <p className="mt-1 text-sm text-white/70">
+            <p className="mt-1 text-sm text-black/70">
               {projection.explanation}
             </p>
           </div>
 
           <button
             type="button"
-            className="rounded-lg border border-cyan-400/35 bg-cyan-500/15 px-3 py-1.5 text-xs text-cyan-100 hover:bg-cyan-500/25"
+            className="neo-box neo-button neo-button-info"
             onClick={async () => {
               const summary = `Status ${projection.status}, vitality ${projection.score}, day ${controls.day}.`;
               setLoading(true);
@@ -182,7 +182,7 @@ export function TimeTravelPanel({
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2 }}
-              className="rounded-xl border border-white/10 bg-white/[0.03] p-3 text-sm text-white/80"
+              className="neo-inset bg-gray-100 p-3 text-sm text-black/80"
             >
               {narrative}
             </motion.p>

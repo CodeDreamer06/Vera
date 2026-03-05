@@ -26,7 +26,7 @@ export function SettingsView() {
           <div className="flex gap-2">
             <button
               type="button"
-              className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs hover:bg-white/10"
+              className="neo-box neo-button"
               onClick={() => {
                 document.documentElement.dataset.theme = "dark";
                 localStorage.setItem("vera-theme", "dark");
@@ -37,7 +37,7 @@ export function SettingsView() {
             </button>
             <button
               type="button"
-              className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs hover:bg-white/10"
+              className="neo-box neo-button"
               onClick={() => {
                 document.documentElement.dataset.theme = "light";
                 localStorage.setItem("vera-theme", "light");
@@ -47,7 +47,7 @@ export function SettingsView() {
               <Sun size={13} className="mr-1 inline" /> Light
             </button>
           </div>
-          <p className="mt-2 text-xs text-white/60">Current theme: {theme}</p>
+          <p className="mt-2 text-xs text-black/65">Current theme: {theme}</p>
         </GlassCard>
 
         <GlassCard>
@@ -55,7 +55,7 @@ export function SettingsView() {
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              className="rounded-lg border border-emerald-300/35 bg-emerald-500/15 px-3 py-1.5 text-xs text-emerald-100 hover:bg-emerald-500/25"
+              className="neo-box neo-button neo-button-accent"
               onClick={async () => {
                 await exportAll();
                 toast.success("Demo data exported");
@@ -64,7 +64,7 @@ export function SettingsView() {
               Export JSON
             </button>
 
-            <label className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs hover:bg-white/10">
+            <label className="neo-box neo-button cursor-pointer">
               Import JSON
               <input
                 type="file"
@@ -87,12 +87,12 @@ export function SettingsView() {
               onChange={(e) =>
                 setMode(e.currentTarget.value as "merge" | "replace")
               }
-              className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs"
+              className="neo-input px-3 py-1.5 text-xs"
             >
-              <option value="merge" className="bg-slate-900">
+              <option value="merge">
                 Merge
               </option>
-              <option value="replace" className="bg-slate-900">
+              <option value="replace">
                 Replace
               </option>
             </select>
@@ -104,7 +104,7 @@ export function SettingsView() {
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              className="rounded-lg border border-rose-300/35 bg-rose-500/15 px-3 py-1.5 text-xs text-rose-100 hover:bg-rose-500/25"
+              className="neo-box neo-button neo-button-alert"
               onClick={async () => {
                 await resetAll();
                 await initialize();
@@ -115,7 +115,7 @@ export function SettingsView() {
             </button>
             <button
               type="button"
-              className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs hover:bg-white/10"
+              className="neo-box neo-button"
               onClick={() =>
                 setFakeError(new Error("Simulated panel failure for demo"))
               }
@@ -123,7 +123,7 @@ export function SettingsView() {
               Trigger Error UI Demo
             </button>
           </div>
-          <p className="mt-2 text-xs text-white/60">
+          <p className="mt-2 text-xs text-black/65">
             Use this panel during demo to show robust recovery and debug detail
             copy flows.
           </p>
@@ -131,10 +131,10 @@ export function SettingsView() {
 
         <GlassCard>
           <h3 className="mb-3 text-sm font-semibold">LLM Mode</h3>
-          <p className="text-xs text-white/70">
+          <p className="text-xs text-black/70">
             Runtime mode is controlled by environment variables.
           </p>
-          <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-white/65">
+          <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-black/70">
             <li>
               `NEXT_PUBLIC_MOCK_LLM=1` keeps full offline deterministic fallback
               behavior.
