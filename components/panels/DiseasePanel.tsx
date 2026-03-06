@@ -131,7 +131,9 @@ export function DiseasePanel({
                   {scan.confidence > 0.7 && (
                     <AlertTriangle size={14} className="text-[var(--color-alert)]" />
                   )}
-                  <p className="font-black uppercase text-sm">{scan.mockLabel}</p>
+                  <p className="font-black uppercase text-sm">
+                    {scan.label || scan.mockLabel || "Unknown"}
+                  </p>
                   <span className="ml-auto font-mono text-[10px] bg-black text-white px-2 py-1">
                     {Math.round(scan.confidence * 100)}%
                   </span>
@@ -140,7 +142,7 @@ export function DiseasePanel({
                 <div className="border-t border-black/20 pt-2">
                   <p className="text-[10px] font-mono uppercase text-black/50 mb-1">Treatment Plan:</p>
                   <ul className="space-y-1">
-                    {scan.treatmentPlan.map((item, i) => (
+                    {scan.treatmentPlan.map((item) => (
                       <li key={item} className="flex items-start gap-2 text-xs">
                         <span className="text-[var(--color-accent)] font-bold">☐</span>
                         <span className="uppercase">{item}</span>

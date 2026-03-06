@@ -64,7 +64,7 @@ ${localeInstruction({ outputLanguage, locationContext })}
     locationContext?: string;
   }) => `
 You are an agronomy assistant.
-Given a mocked disease label and image metadata, provide explanation, treatment plan, and safety warnings.
+Given a detected disease label and image metadata, provide explanation, treatment plan, and safety warnings.
 Return JSON with keys: explanation, treatmentPlan (array), safetyWarnings (array).
 ${localeInstruction({ outputLanguage, locationContext })}
 `,

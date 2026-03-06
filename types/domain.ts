@@ -83,7 +83,8 @@ export interface DiseaseScan {
   plantId: string;
   createdAt: number;
   imageDataUrlOrBlobKey: string;
-  mockLabel: string;
+  label: string;
+  mockLabel?: string;
   confidence: number;
   llmNarrative: string;
   treatmentPlan: string[];

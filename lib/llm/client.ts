@@ -81,3 +81,63 @@ export const callLlmJson = async <T>(params: {
 
   return params.schema.parse(parsed);
 };
+
+export const callLlmJsonWithImage = async <T>(params: {
+  systemPrompt: string;
+  userPrompt: string;
+  imageDataUrl: string;
+  schema: z.ZodSchema<T>;
+}) => {
+  if (shouldMockLlm()) {
+    throw new Error("mock-llm-enabled");
+  }
+
+  if (!apiKey) {
+    throw new Error("missing-openai-api-key");
+  }
+
+  const res = await fetch(`${baseUrl}/chat/completions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      temperature: 0.2,
+      messages: [
+        { role: "system", content: params.systemPrompt },
+        {
+          role: "user",
+          content: [
+            { type: "text", text: params.userPrompt },
+            {
+              type: "image_url",
+              image_url: {
+                url: params.imageDataUrl,
+                detail: "high",
+              },
+            },
+          ],
+        },
+      ],
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`llm-http-${res.status}: ${body}`);
+  }
+
+  const payload = (await res.json()) as {
+    choices?: Array<{ message?: { content?: string } }>;
+  };
+
+  const content = payload.choices?.[0]?.message?.content;
+  if (!content) {
+    throw new Error("llm-empty-response");
+  }
+
+  const parsed = parseJsonFromContent(content);
+  return params.schema.parse(parsed);
+};

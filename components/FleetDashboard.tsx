@@ -1,7 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Bot, Sparkles, Terminal, TriangleAlert } from "lucide-react";
+import {
+  Bot,
+  Droplets,
+  RefreshCw,
+  Terminal,
+  TriangleAlert,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -19,11 +25,11 @@ import { RecipeModePanel } from "@/components/panels/RecipeModePanel";
 import { TerminalPanel } from "@/components/panels/TerminalPanel";
 import { TimeTravelPanel } from "@/components/panels/TimeTravelPanel";
 import { CommandPalette } from "@/components/ui/CommandPalette";
-import { GlassCard, Pill } from "@/components/ui/Glass";
+import { GlassCard } from "@/components/ui/Glass";
 import { PanelErrorBoundary } from "@/components/ui/PanelErrorBoundary";
 import { ShortcutsDialog } from "@/components/ui/ShortcutsDialog";
-import { useShortcutBindings } from "@/lib/shortcuts/useShortcutBindings";
 import { useI18n } from "@/lib/i18n";
+import { useShortcutBindings } from "@/lib/shortcuts/useShortcutBindings";
 import { useAppStore } from "@/lib/store";
 import type { TimeTravelControls } from "@/types/domain";
 
@@ -56,6 +62,9 @@ export function FleetDashboard() {
     opsBriefs,
     recipeMode,
     personaTone,
+    waterLevel,
+    waterLevelLoading,
+    waterLevelError,
     initialize,
     startDemoMode,
     setActivePlant,
@@ -69,6 +78,7 @@ export function FleetDashboard() {
     analyzeDisease,
     runOperatorBrief,
     addInboxReply,
+    refreshWaterLevel,
   } = useAppStore();
 
   const [search, setSearch] = useState("");
@@ -99,6 +109,20 @@ export function FleetDashboard() {
     return () => window.clearInterval(timer);
   }, [hydrated, tickSensors]);
 
+  useEffect(() => {
+    if (!hydrated) {
+      return;
+    }
+
+    void refreshWaterLevel();
+
+    const timer = window.setInterval(() => {
+      void refreshWaterLevel();
+    }, 60000);
+
+    return () => window.clearInterval(timer);
+  }, [hydrated, refreshWaterLevel]);
+
   const filteredPlants = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) {
@@ -128,7 +152,9 @@ export function FleetDashboard() {
   const inboxMessages = activePlant ? (inboxByPlant[activePlant.id] ?? []) : [];
 
   // Terminal output content
-  const alertCount = alerts.filter(a => a.severity === "high" || a.severity === "critical").length;
+  const alertCount = alerts.filter(
+    (a) => a.severity === "high" || a.severity === "critical",
+  ).length;
   const activeCount = plants.length;
 
   useShortcutBindings({
@@ -211,13 +237,98 @@ export function FleetDashboard() {
       }
     >
       {loading ? (
-            <div className="neo-box bg-white p-8 text-center">
-              <div className="font-mono text-sm uppercase tracking-wider">
+        <div className="neo-box bg-white p-8 text-center">
+          <div className="font-mono text-sm uppercase tracking-wider">
             <span className="cursor-blink">{t("initializingSystem")}</span>
-              </div>
-            </div>
+          </div>
+        </div>
       ) : (
         <>
+          <div className="neo-box bg-[var(--color-info)] p-4">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex items-start gap-3">
+                <div className="flex h-12 w-12 items-center justify-center border-[3px] border-black bg-white">
+                  <Droplets size={22} />
+                </div>
+                <div>
+                  <div className="font-mono text-[11px] uppercase tracking-[0.28em] text-black/60">
+                    Water Tank
+                  </div>
+                  <div className="text-2xl font-black uppercase tracking-tight">
+                    {waterLevel
+                      ? `${waterLevel.fillPercent}% full`
+                      : waterLevelError
+                        ? "sensor offline"
+                        : "waiting for reading"}
+                  </div>
+                  <div className="font-mono text-xs uppercase text-black/65">
+                    {waterLevel
+                      ? `Distance ${waterLevel.distanceCm.toFixed(1)} cm`
+                      : "Ultrasonic measure"}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[520px]">
+                <div className="neo-inset bg-white p-3">
+                  <div className="font-mono text-[10px] uppercase text-black/50">
+                    Level
+                  </div>
+                  <div className="text-2xl font-black seven-seg">
+                    {waterLevel ? `${waterLevel.fillPercent}` : "--"}
+                  </div>
+                </div>
+                <div className="neo-inset bg-white p-3">
+                  <div className="font-mono text-[10px] uppercase text-black/50">
+                    Delta
+                  </div>
+                  <div className="text-2xl font-black seven-seg">
+                    {waterLevel?.deltaCm !== null &&
+                    waterLevel?.deltaCm !== undefined
+                      ? `${waterLevel.deltaCm > 0 ? "+" : ""}${waterLevel.deltaCm}`
+                      : "--"}
+                  </div>
+                </div>
+                <div className="neo-inset bg-white p-3">
+                  <div className="font-mono text-[10px] uppercase text-black/50">
+                    Est. Use
+                  </div>
+                  <div className="text-2xl font-black seven-seg">
+                    {waterLevel
+                      ? `${waterLevel.estimatedConsumptionMl ?? 0}`
+                      : "--"}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="max-w-[240px] font-mono text-[11px] uppercase text-black/65">
+                  {waterLevelError
+                    ? waterLevelError
+                    : waterLevel
+                      ? `Last sample ${new Date(waterLevel.measuredAt).toLocaleTimeString()}`
+                      : "No water sample yet"}
+                </div>
+                <button
+                  type="button"
+                  className="neo-box neo-button bg-white"
+                  onClick={() => {
+                    void refreshWaterLevel();
+                  }}
+                  disabled={waterLevelLoading}
+                >
+                  <span className="flex items-center gap-2">
+                    <RefreshCw
+                      size={14}
+                      className={waterLevelLoading ? "animate-spin" : ""}
+                    />
+                    {waterLevelLoading ? "MEASURING" : "MEASURE"}
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+
           {/* Main Content Grid - Plant Monitor + Terminal */}
           <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
             {/* Left Column: Plant Grid */}
@@ -241,7 +352,9 @@ export function FleetDashboard() {
                   </div>
 
                   <div className="neo-inset flex items-center px-4 py-2 w-full sm:w-auto min-w-[280px]">
-                    <span className="font-mono font-bold text-xl mr-2">&gt;</span>
+                    <span className="font-mono font-bold text-xl mr-2">
+                      &gt;
+                    </span>
                     <input
                       ref={searchRef}
                       value={search}
@@ -263,13 +376,24 @@ export function FleetDashboard() {
                     latest={(readingsByPlant[plant.id] ?? []).at(-1)}
                     persona={(personaByPlant[plant.id] ?? []).at(-1)}
                     onFocus={() => setActivePlant(plant.id)}
-                    variant={index % 4 === 1 ? "info" : index % 4 === 3 ? "alert" : index % 4 === 2 ? "accent" : "default"}
+                    variant={
+                      index % 4 === 1
+                        ? "info"
+                        : index % 4 === 3
+                          ? "alert"
+                          : index % 4 === 2
+                            ? "accent"
+                            : "default"
+                    }
                   />
                 ))}
               </div>
 
               {/* Load More */}
-              <button className="w-full neo-box py-4 font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all group">
+              <button
+                type="button"
+                className="w-full neo-box py-4 font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all group"
+              >
                 {t("loadMore")}
               </button>
             </div>
@@ -299,19 +423,29 @@ export function FleetDashboard() {
                   <div className="text-3xl font-black seven-seg">
                     {String(activeCount).padStart(2, "0")}
                   </div>
-                  <div className="font-mono text-xs uppercase mt-1">{t("active")}</div>
+                  <div className="font-mono text-xs uppercase mt-1">
+                    {t("active")}
+                  </div>
                 </div>
-                <div className={`neo-box p-4 text-center ${alertCount > 0 ? "bg-[var(--color-alert)]" : "bg-white"}`}>
-                  <div className={`text-3xl font-black seven-seg ${alertCount > 0 ? "text-white" : ""}`}>
+                <div
+                  className={`neo-box p-4 text-center ${alertCount > 0 ? "bg-[var(--color-alert)]" : "bg-white"}`}
+                >
+                  <div
+                    className={`text-3xl font-black seven-seg ${alertCount > 0 ? "text-white" : ""}`}
+                  >
                     {String(alertCount).padStart(2, "0")}
                   </div>
-                  <div className={`font-mono text-xs uppercase mt-1 ${alertCount > 0 ? "text-white" : ""}`}>
+                  <div
+                    className={`font-mono text-xs uppercase mt-1 ${alertCount > 0 ? "text-white" : ""}`}
+                  >
                     {t("alert")}
                   </div>
                 </div>
                 <div className="neo-box p-4 text-center col-span-2 bg-[var(--color-info)] border-black">
                   <div className="flex justify-between items-center">
-                    <span className="font-mono text-xs uppercase">{t("llmStatus")}</span>
+                    <span className="font-mono text-xs uppercase">
+                      {t("llmStatus")}
+                    </span>
                     <span className="text-xl font-black">{t("online")}</span>
                   </div>
                   <div className="w-full bg-black h-2 mt-2 border border-white">
@@ -349,7 +483,10 @@ export function FleetDashboard() {
               <div className="neo-box bg-black text-white p-4 mb-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Terminal size={20} className="text-[var(--color-accent)]" />
+                    <Terminal
+                      size={20}
+                      className="text-[var(--color-accent)]"
+                    />
                     <span className="font-mono text-xs uppercase text-[var(--color-accent)]">
                       {t("activeUnit")}
                     </span>
@@ -372,177 +509,196 @@ export function FleetDashboard() {
               <div className="grid gap-6 xl:grid-cols-[1.6fr_1fr]">
                 {/* Left: Charts & Data */}
                 <div className="space-y-6">
-                <PanelErrorBoundary
-                  panel="sensor-chart"
-                  plantId={activePlant.id}
-                >
-                  <GlassCard>
-                    <div className="mb-3 flex items-center justify-between gap-2">
-                      <div>
-                        <h3 className="text-sm font-black uppercase tracking-tight text-black">
-                          {t("liveTelemetry", { name: activePlant.name })}
-                        </h3>
-                        <p className="text-xs text-black/65 font-mono uppercase">
-                          {t("incomingTelemetry")}
-                        </p>
+                  <PanelErrorBoundary
+                    panel="sensor-chart"
+                    plantId={activePlant.id}
+                  >
+                    <GlassCard>
+                      <div className="mb-3 flex items-center justify-between gap-2">
+                        <div>
+                          <h3 className="text-sm font-black uppercase tracking-tight text-black">
+                            {t("liveTelemetry", { name: activePlant.name })}
+                          </h3>
+                          <p className="text-xs text-black/65 font-mono uppercase">
+                            {t("incomingTelemetry")}
+                          </p>
+                        </div>
+                        <select
+                          ref={rangeRef}
+                          value={metric}
+                          onChange={(e) =>
+                            setMetric(
+                              e.currentTarget
+                                .value as (typeof chartMetrics)[number],
+                            )
+                          }
+                          className="neo-input px-3 py-2 text-xs"
+                        >
+                          {chartMetrics.map((m) => (
+                            <option key={m} value={m}>
+                              {m}
+                            </option>
+                          ))}
+                        </select>
                       </div>
-                      <select
-                        ref={rangeRef}
-                        value={metric}
-                        onChange={(e) =>
-                          setMetric(
-                            e.currentTarget
-                              .value as (typeof chartMetrics)[number],
-                          )
-                        }
-                        className="neo-input px-3 py-2 text-xs"
-                      >
-                        {chartMetrics.map((m) => (
-                          <option key={m} value={m}>
-                            {m}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
 
-                    <SensorChart
-                      readings={activeReadings.slice(-60)}
-                      metric={metric}
-                    />
+                      <SensorChart
+                        readings={activeReadings.slice(-60)}
+                        metric={metric}
+                      />
 
-                    <div className="mt-4 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
-                      <div className="neo-inset p-3 text-center">
-                        <div className="text-[10px] font-mono uppercase opacity-50 mb-1">pH_Lvl</div>
-                        <div className="text-xl font-black seven-seg">{latestReading?.pH.toFixed(2) ?? "--"}</div>
-                      </div>
-                      <div className="neo-inset p-3 text-center bg-[var(--color-accent)]">
-                        <div className="text-[10px] font-mono uppercase mb-1">TDS</div>
-                        <div className="text-xl font-black seven-seg">
-                          {latestReading ? Math.round(latestReading.tds) : "--"}
+                      <div className="mt-4 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
+                        <div className="neo-inset p-3 text-center">
+                          <div className="text-[10px] font-mono uppercase opacity-50 mb-1">
+                            pH_Lvl
+                          </div>
+                          <div className="text-xl font-black seven-seg">
+                            {latestReading?.pH.toFixed(2) ?? "--"}
+                          </div>
+                        </div>
+                        <div className="neo-inset p-3 text-center bg-[var(--color-accent)]">
+                          <div className="text-[10px] font-mono uppercase mb-1">
+                            TDS
+                          </div>
+                          <div className="text-xl font-black seven-seg">
+                            {latestReading
+                              ? Math.round(latestReading.tds)
+                              : "--"}
+                          </div>
+                        </div>
+                        <div className="neo-inset p-3 text-center">
+                          <div className="text-[10px] font-mono uppercase opacity-50 mb-1">
+                            DO
+                          </div>
+                          <div className="text-xl font-black seven-seg">
+                            {latestReading?.do.toFixed(1) ?? "--"}
+                          </div>
+                        </div>
+                        <div className="neo-inset p-3 text-center">
+                          <div className="text-[10px] font-mono uppercase opacity-50 mb-1">
+                            TEMP
+                          </div>
+                          <div className="text-xl font-black seven-seg">
+                            {latestReading?.tempC.toFixed(1) ?? "--"}°C
+                          </div>
                         </div>
                       </div>
-                      <div className="neo-inset p-3 text-center">
-                        <div className="text-[10px] font-mono uppercase opacity-50 mb-1">DO</div>
-                        <div className="text-xl font-black seven-seg">{latestReading?.do.toFixed(1) ?? "--"}</div>
-                      </div>
-                      <div className="neo-inset p-3 text-center">
-                        <div className="text-[10px] font-mono uppercase opacity-50 mb-1">TEMP</div>
-                        <div className="text-xl font-black seven-seg">{latestReading?.tempC.toFixed(1) ?? "--"}°C</div>
-                      </div>
-                    </div>
-                  </GlassCard>
-                </PanelErrorBoundary>
+                    </GlassCard>
+                  </PanelErrorBoundary>
 
-                <PanelErrorBoundary
-                  panel="anomaly-feed"
-                  plantId={activePlant.id}
-                >
-                  <AnomalyFeed
-                    anomalies={anomalies.filter(
-                      (anomaly) => anomaly.plantId === activePlant.id,
-                    )}
-                    onExplain={requestRootCause}
-                  />
-                </PanelErrorBoundary>
-
-                <PanelErrorBoundary panel="inbox" plantId={activePlant.id}>
-                  <PlantInbox
-                    messages={inboxMessages}
-                    onReply={(text) => addInboxReply(activePlant.id, text)}
-                  />
-                </PanelErrorBoundary>
-              </div>
-
-              {/* Right: Persona & Tools */}
-              <div className="space-y-6">
-                <PanelErrorBoundary panel="persona" plantId={activePlant.id}>
-                  <PersonaPanel
-                    messages={personaMessages}
-                    tone={personaTone}
-                    onTone={setPersonaTone}
-                    onRefresh={() => refreshPersona(activePlant.id)}
-                  />
-                </PanelErrorBoundary>
-
-                {recipeMode ? (
                   <PanelErrorBoundary
-                    panel="recipe-mode"
+                    panel="anomaly-feed"
                     plantId={activePlant.id}
                   >
-                    <RecipeModePanel
-                      plant={activePlant}
-                      latest={latestReading}
-                      onExplain={async (summary, interventions) => {
-                        const response = await runTimeTravelNarrative(
-                          activePlant.id,
-                          24,
-                          summary,
-                          interventions,
-                        );
-                        return `${response.narrative} ${response.likelyImpact}`;
-                      }}
+                    <AnomalyFeed
+                      anomalies={anomalies.filter(
+                        (anomaly) => anomaly.plantId === activePlant.id,
+                      )}
+                      onExplain={requestRootCause}
                     />
                   </PanelErrorBoundary>
-                ) : null}
 
-                {showTimeTravel ? (
-                  <PanelErrorBoundary
-                    panel="time-travel"
-                    plantId={activePlant.id}
-                  >
-                    <TimeTravelPanel
-                      latest={latestReading}
-                      onNarrate={async (
-                        controls: TimeTravelControls,
-                        summary: string,
-                      ) => {
-                        const interventions = [
-                          controls.increaseAeration
-                            ? "Increase aeration"
-                            : null,
-                          controls.reduceTemp
-                            ? "Lower temperature by 2C"
-                            : null,
-                          controls.rebalanceNutrients
-                            ? "Rebalance nutrient mix"
-                            : null,
-                        ].filter(Boolean) as string[];
-
-                        const response = await runTimeTravelNarrative(
-                          activePlant.id,
-                          controls.day * 24,
-                          summary,
-                          interventions,
-                        );
-
-                        return `${response.narrative} ${response.likelyImpact}`;
-                      }}
+                  <PanelErrorBoundary panel="inbox" plantId={activePlant.id}>
+                    <PlantInbox
+                      messages={inboxMessages}
+                      onReply={(text) => addInboxReply(activePlant.id, text)}
                     />
                   </PanelErrorBoundary>
-                ) : null}
+                </div>
 
-                {showDisease ? (
-                  <PanelErrorBoundary panel="disease" plantId={activePlant.id}>
-                    <DiseasePanel
+                {/* Right: Persona & Tools */}
+                <div className="space-y-6">
+                  <PanelErrorBoundary panel="persona" plantId={activePlant.id}>
+                    <PersonaPanel
+                      messages={personaMessages}
+                      tone={personaTone}
+                      onTone={setPersonaTone}
+                      onRefresh={() => refreshPersona(activePlant.id)}
+                    />
+                  </PanelErrorBoundary>
+
+                  {recipeMode ? (
+                    <PanelErrorBoundary
+                      panel="recipe-mode"
                       plantId={activePlant.id}
-                      scans={diseaseScans}
-                      onAnalyze={async ({
-                        plantId,
-                        imageDataUrlOrBlobKey,
-                        imageMeta,
-                      }) => {
-                        await analyzeDisease(
+                    >
+                      <RecipeModePanel
+                        plant={activePlant}
+                        latest={latestReading}
+                        onExplain={async (summary, interventions) => {
+                          const response = await runTimeTravelNarrative(
+                            activePlant.id,
+                            24,
+                            summary,
+                            interventions,
+                          );
+                          return `${response.narrative} ${response.likelyImpact}`;
+                        }}
+                      />
+                    </PanelErrorBoundary>
+                  ) : null}
+
+                  {showTimeTravel ? (
+                    <PanelErrorBoundary
+                      panel="time-travel"
+                      plantId={activePlant.id}
+                    >
+                      <TimeTravelPanel
+                        latest={latestReading}
+                        onNarrate={async (
+                          controls: TimeTravelControls,
+                          summary: string,
+                        ) => {
+                          const interventions = [
+                            controls.increaseAeration
+                              ? "Increase aeration"
+                              : null,
+                            controls.reduceTemp
+                              ? "Lower temperature by 2C"
+                              : null,
+                            controls.rebalanceNutrients
+                              ? "Rebalance nutrient mix"
+                              : null,
+                          ].filter(Boolean) as string[];
+
+                          const response = await runTimeTravelNarrative(
+                            activePlant.id,
+                            controls.day * 24,
+                            summary,
+                            interventions,
+                          );
+
+                          return `${response.narrative} ${response.likelyImpact}`;
+                        }}
+                      />
+                    </PanelErrorBoundary>
+                  ) : null}
+
+                  {showDisease ? (
+                    <PanelErrorBoundary
+                      panel="disease"
+                      plantId={activePlant.id}
+                    >
+                      <DiseasePanel
+                        plantId={activePlant.id}
+                        scans={diseaseScans}
+                        onAnalyze={async ({
                           plantId,
                           imageDataUrlOrBlobKey,
                           imageMeta,
-                        );
-                        toast.success(t("diseaseCardUpdated"));
-                      }}
-                    />
-                  </PanelErrorBoundary>
-                ) : null}
+                        }) => {
+                          await analyzeDisease(
+                            plantId,
+                            imageDataUrlOrBlobKey,
+                            imageMeta,
+                          );
+                          toast.success(t("diseaseCardUpdated"));
+                        }}
+                      />
+                    </PanelErrorBoundary>
+                  ) : null}
 
-                {/* Predictive Watch */}
+                  {/* Predictive Watch */}
                   <div className="neo-box bg-white p-4">
                     <div className="mb-3 flex items-center gap-2 border-b-2 border-black pb-2">
                       <Bot size={15} className="text-[var(--color-info)]" />
@@ -566,14 +722,19 @@ export function FleetDashboard() {
                         >
                           <div className="mb-1 flex items-center gap-2 text-black">
                             <TriangleAlert size={14} />
-                            <p className="text-xs font-bold uppercase">{alert.title}</p>
+                            <p className="text-xs font-bold uppercase">
+                              {alert.title}
+                            </p>
                           </div>
                           <p className="text-xs text-black/75 font-mono uppercase">
                             {alert.description}
                           </p>
                         </div>
                       ))}
-                    {alerts.filter(a => a.type === "predictive" && a.plantId === activePlant.id).length === 0 && (
+                    {alerts.filter(
+                      (a) =>
+                        a.type === "predictive" && a.plantId === activePlant.id,
+                    ).length === 0 && (
                       <p className="text-xs text-black/50 font-mono uppercase">
                         {t("noPredictiveAlerts")}
                       </p>

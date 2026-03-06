@@ -50,6 +50,15 @@ interface AppState {
   opsBriefs: OpsBrief[];
   recipeMode: boolean;
   personaTone: PersonaTone;
+  waterLevel: {
+    distanceCm: number;
+    fillPercent: number;
+    deltaCm: number | null;
+    estimatedConsumptionMl: number | null;
+    measuredAt: number;
+  } | null;
+  waterLevelLoading: boolean;
+  waterLevelError: string | null;
 
   initialize: () => Promise<void>;
   startDemoMode: (count?: number) => Promise<void>;
@@ -78,6 +87,7 @@ interface AppState {
   ) => Promise<DiseaseScan>;
   runOperatorBrief: () => Promise<OpsBrief>;
   addInboxReply: (plantId: string, text: string) => Promise<void>;
+  refreshWaterLevel: () => Promise<void>;
   exportAll: () => Promise<void>;
   importAll: (file: File, mode: "merge" | "replace") => Promise<void>;
   resetAll: () => Promise<void>;
@@ -109,8 +119,8 @@ const fetchJson = async <T>(url: string, body: unknown): Promise<T> => {
   return (await res.json()) as T;
 };
 
-const fetchEspDistance = async (): Promise<number | null> => {
-  if (process.env.NEXT_PUBLIC_SENSOR_SOURCE !== "esp") {
+const fetchEspDistance = async (force = false): Promise<number | null> => {
+  if (!force && process.env.NEXT_PUBLIC_SENSOR_SOURCE !== "esp") {
     return null;
   }
 
@@ -141,6 +151,25 @@ const distanceToSoilMoisture = (distanceCm: number) => {
   return 90 - ratio * 70;
 };
 
+const fullDistanceCm = Number(
+  process.env.NEXT_PUBLIC_WATER_TANK_FULL_DISTANCE_CM ?? 4,
+);
+const emptyDistanceCm = Number(
+  process.env.NEXT_PUBLIC_WATER_TANK_EMPTY_DISTANCE_CM ?? 28,
+);
+const usageMlPerCm = Number(
+  process.env.NEXT_PUBLIC_WATER_USAGE_ML_PER_CM ?? 180,
+);
+
+const distanceToFillPercent = (distanceCm: number) => {
+  const clampedDistance = Math.min(
+    Math.max(distanceCm, fullDistanceCm),
+    emptyDistanceCm,
+  );
+  const span = Math.max(1, emptyDistanceCm - fullDistanceCm);
+  return Math.round(((emptyDistanceCm - clampedDistance) / span) * 100);
+};
+
 export const useAppStore = create<AppState>((set, get) => ({
   hydrated: false,
   loading: false,
@@ -156,6 +185,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   opsBriefs: [],
   recipeMode: false,
   personaTone: "calm",
+  waterLevel: null,
+  waterLevelLoading: false,
+  waterLevelError: null,
 
   initialize: async () => {
     if (get().hydrated) {
@@ -219,6 +251,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       diseaseByPlant,
       inboxByPlant,
     });
+
+    void get().refreshWaterLevel();
   },
 
   startDemoMode: async (count = 10) => {
@@ -496,7 +530,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       plantId,
       createdAt: Date.now(),
       imageDataUrlOrBlobKey,
-      mockLabel: ml.label,
+      label: ml.label,
       confidence: ml.confidence,
       llmNarrative: ml.explanation,
       treatmentPlan: ml.treatmentPlan,
@@ -590,6 +624,45 @@ export const useAppStore = create<AppState>((set, get) => ({
     }));
   },
 
+  refreshWaterLevel: async () => {
+    set({ waterLevelLoading: true, waterLevelError: null });
+
+    try {
+      const distanceCm = await fetchEspDistance(true);
+      if (distanceCm === null) {
+        throw new Error("Water level sensor is unavailable");
+      }
+
+      const previous = get().waterLevel;
+      const rawDelta = previous ? distanceCm - previous.distanceCm : null;
+      const deltaCm =
+        rawDelta !== null && Number.isFinite(rawDelta)
+          ? Number(rawDelta.toFixed(1))
+          : null;
+      const estimatedConsumptionMl =
+        deltaCm !== null && deltaCm > 0
+          ? Math.round(deltaCm * usageMlPerCm)
+          : 0;
+
+      set({
+        waterLevel: {
+          distanceCm: Number(distanceCm.toFixed(1)),
+          fillPercent: distanceToFillPercent(distanceCm),
+          deltaCm,
+          estimatedConsumptionMl,
+          measuredAt: Date.now(),
+        },
+        waterLevelLoading: false,
+        waterLevelError: null,
+      });
+    } catch (error) {
+      set({
+        waterLevelLoading: false,
+        waterLevelError: (error as Error).message,
+      });
+    }
+  },
+
   exportAll: async () => {
     const bundle = await exportDemoData();
     const { downloadJson } = await import("@/lib/storage/importExport");
@@ -619,6 +692,9 @@ export const useAppStore = create<AppState>((set, get) => ({
       diseaseByPlant: {},
       inboxByPlant: {},
       opsBriefs: [],
+      waterLevel: null,
+      waterLevelLoading: false,
+      waterLevelError: null,
     });
   },
 }));

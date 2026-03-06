@@ -19,13 +19,13 @@ const commandSchema = z.discriminatedUnion("action", [
 ]);
 
 const timeoutMs = Number(process.env.ESP8266_TIMEOUT_MS ?? 2500);
-const distancePath = process.env.ESP8266_DISTANCE_PATH ?? "/distance";
+const distancePath = process.env.ESP8266_DISTANCE_PATH ?? "/measureWaterDist";
+const distanceMethod =
+  process.env.ESP8266_DISTANCE_METHOD?.trim().toUpperCase() ?? "POST";
+const defaultBaseUrl = "http://10.177.77.195";
 
 const getBaseUrl = () => {
-  const baseUrl = process.env.ESP8266_BASE_URL?.trim();
-  if (!baseUrl) {
-    throw new Error("ESP8266_BASE_URL is not configured");
-  }
+  const baseUrl = process.env.ESP8266_BASE_URL?.trim() ?? defaultBaseUrl;
 
   return baseUrl.replace(/\/$/, "");
 };
@@ -40,13 +40,13 @@ const parseNumberFromText = (text: string): number | null => {
   return Number.isFinite(value) ? value : null;
 };
 
-const callEsp = async (path: string) => {
+const callEsp = async (path: string, method = "GET") => {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const response = await fetch(`${getBaseUrl()}${path}`, {
-      method: "GET",
+      method,
       cache: "no-store",
       signal: controller.signal,
     });
@@ -59,7 +59,7 @@ const callEsp = async (path: string) => {
 };
 
 const fetchDistance = async () => {
-  const result = await callEsp(distancePath);
+  const result = await callEsp(distancePath, distanceMethod);
   if (!result.ok) {
     throw new Error(`distance request failed with ${result.status}`);
   }
