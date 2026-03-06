@@ -35,7 +35,7 @@ export function AppShell({
 
       <div className="flex min-h-[calc(100vh-42px)]">
         {/* Brutalist Sidebar */}
-        <aside className="fixed top-[42px] z-40 hidden h-[calc(100vh-42px)] w-72 flex-col overflow-y-auto border-r-[3px] border-black bg-white lg:flex">
+        <aside className="fixed top-0 z-40 hidden h-screen w-72 flex-col overflow-y-auto border-r-[3px] border-black bg-white lg:flex">
           {/* Logo Block */}
           <div className="relative overflow-hidden border-b-[3px] border-black bg-black p-8 text-white">
             <div className="absolute -right-10 -top-10 h-20 w-20 rotate-45 bg-white opacity-10" />

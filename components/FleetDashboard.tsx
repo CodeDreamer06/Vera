@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import {
   Bot,
   Droplets,
+  Power,
   RefreshCw,
   Terminal,
   TriangleAlert,
@@ -93,6 +94,8 @@ export function FleetDashboard() {
   const [opsLoading, setOpsLoading] = useState(false);
   const [onboardingBusy, setOnboardingBusy] = useState(false);
   const [metric, setMetric] = useState<(typeof chartMetrics)[number]>("pH");
+  const [relayLoading, setRelayLoading] = useState(false);
+  const [relayState, setRelayState] = useState<boolean | null>(null);
 
   useEffect(() => {
     initialize();
@@ -388,6 +391,65 @@ export function FleetDashboard() {
                   </span>
                 </button>
               </div>
+            </div>
+          </div>
+
+          <div className="neo-box bg-white p-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="font-mono text-[11px] uppercase tracking-[0.28em] text-black/60">
+                  Pump Relay
+                </div>
+                <div className="text-lg font-black uppercase tracking-tight">
+                  Water Tank Pump
+                </div>
+                <div className="font-mono text-xs uppercase text-black/65">
+                  Status:{" "}
+                  {relayState === null ? "unknown" : relayState ? "ON" : "OFF"}
+                </div>
+              </div>
+              <button
+                type="button"
+                className={`neo-box neo-button flex items-center gap-2 ${relayState ? "neo-button-accent" : "bg-white"}`}
+                onClick={async () => {
+                  setRelayLoading(true);
+                  try {
+                    const response = await fetch("/api/device/esp", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ action: "toggleRelay" }),
+                    });
+                    const payload = (await response.json()) as {
+                      error?: string;
+                      relayRaw?: string;
+                      relayState?: boolean;
+                    };
+
+                    if (!response.ok) {
+                      throw new Error(payload.error ?? "relay toggle failed");
+                    }
+
+                    setRelayState(
+                      typeof payload.relayState === "boolean"
+                        ? payload.relayState
+                        : payload.relayRaw?.trim().toUpperCase() === "ON",
+                    );
+                    toast.success(
+                      t("relayUpdated", {
+                        value: payload.relayRaw ?? "updated",
+                      }),
+                    );
+                  } catch (error) {
+                    toast.error((error as Error).message);
+                  } finally {
+                    setRelayLoading(false);
+                  }
+                }}
+                disabled={relayLoading}
+              >
+                <Power size={14} />
+                {relayLoading ? "SWITCHING" : "TOGGLE PUMP"}
+              </button>
             </div>
           </div>
 
