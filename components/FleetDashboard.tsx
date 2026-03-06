@@ -14,6 +14,7 @@ import { toast } from "sonner";
 
 import { SensorChart } from "@/components/charts/SensorChart";
 import { AppShell } from "@/components/layout/AppShell";
+import { StarterOnboarding } from "@/components/onboarding/StarterOnboarding";
 import { PlantCard } from "@/components/PlantCard";
 import { AlertsCenter } from "@/components/panels/AlertsCenter";
 import { AnomalyFeed } from "@/components/panels/AnomalyFeed";
@@ -29,6 +30,8 @@ import { GlassCard } from "@/components/ui/Glass";
 import { PanelErrorBoundary } from "@/components/ui/PanelErrorBoundary";
 import { ShortcutsDialog } from "@/components/ui/ShortcutsDialog";
 import { useI18n } from "@/lib/i18n";
+import { STARTER_ONBOARDING_STEPS } from "@/lib/onboarding/starter";
+import { useOnboardingWalkthrough } from "@/lib/onboarding/useOnboardingWalkthrough";
 import { useShortcutBindings } from "@/lib/shortcuts/useShortcutBindings";
 import { useAppStore } from "@/lib/store";
 import type { TimeTravelControls } from "@/types/domain";
@@ -88,11 +91,18 @@ export function FleetDashboard() {
   const [showTimeTravel, setShowTimeTravel] = useState(true);
   const [showDisease, setShowDisease] = useState(true);
   const [opsLoading, setOpsLoading] = useState(false);
+  const [onboardingBusy, setOnboardingBusy] = useState(false);
   const [metric, setMetric] = useState<(typeof chartMetrics)[number]>("pH");
 
   useEffect(() => {
     initialize();
   }, [initialize]);
+
+  const onboarding = useOnboardingWalkthrough({
+    key: "vera-onboarding-starter-v1",
+    steps: STARTER_ONBOARDING_STEPS,
+    enabled: hydrated,
+  });
 
   useEffect(() => {
     if (!hydrated) {
@@ -194,6 +204,57 @@ export function FleetDashboard() {
     onSettings: () => router.push("/settings"),
   });
 
+  const runOperatorBriefAction = async () => {
+    setOpsLoading(true);
+    try {
+      await runOperatorBrief();
+      toast.success(t("operatorBriefGenerated"));
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setOpsLoading(false);
+    }
+  };
+
+  const runOnboardingAction = async () => {
+    if (!onboarding.currentStep) {
+      return;
+    }
+
+    setOnboardingBusy(true);
+    try {
+      switch (onboarding.currentStep.id) {
+        case "seed-demo":
+          await startDemoMode(Number(process.env.NEXT_PUBLIC_MAX_PLANTS ?? 9));
+          break;
+        case "choose-plant":
+          if (plants[0]) {
+            setActivePlant(plants[0].id);
+          }
+          break;
+        case "check-alerts":
+          setAlertsOpen(true);
+          break;
+        case "force-issue":
+          await injectDemoAnomaly();
+          setAlertsOpen(true);
+          toast.success(t("demoAnomalyInjected"));
+          break;
+        case "open-disease":
+          setShowDisease(true);
+          break;
+        case "run-brief":
+          await runOperatorBriefAction();
+          break;
+        case "open-palette":
+          setPaletteOpen(true);
+          break;
+      }
+    } finally {
+      setOnboardingBusy(false);
+    }
+  };
+
   return (
     <AppShell
       title={t("fleetTitle")}
@@ -213,18 +274,17 @@ export function FleetDashboard() {
             type="button"
             className="neo-box neo-button neo-button-accent font-black"
             onClick={async () => {
-              setOpsLoading(true);
-              try {
-                await runOperatorBrief();
-                toast.success(t("operatorBriefGenerated"));
-              } catch (error) {
-                toast.error((error as Error).message);
-              } finally {
-                setOpsLoading(false);
-              }
+              await runOperatorBriefAction();
             }}
           >
             {opsLoading ? t("processing") : t("morningOps")}
+          </button>
+          <button
+            type="button"
+            className="neo-box neo-button bg-white font-black"
+            onClick={() => onboarding.setOpen(true)}
+          >
+            Walkthrough
           </button>
           <button
             type="button"
@@ -782,6 +842,23 @@ export function FleetDashboard() {
         open={shortcutsOpen}
         onClose={() => setShortcutsOpen(false)}
       />
+
+      {onboarding.ready ? (
+        <StarterOnboarding
+          open={onboarding.open}
+          step={onboarding.currentStep}
+          progressLabel={onboarding.progressLabel}
+          canGoBack={onboarding.state.currentStepIndex > 0}
+          isLastStep={onboarding.atLastStep}
+          busy={onboardingBusy}
+          onClose={() => onboarding.setOpen(false)}
+          onBack={onboarding.back}
+          onAction={runOnboardingAction}
+          onNext={onboarding.advance}
+          onFinish={onboarding.complete}
+          onReset={onboarding.reset}
+        />
+      ) : null}
     </AppShell>
   );
 }

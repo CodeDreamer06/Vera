@@ -26,6 +26,7 @@ It is built for hackathon demos where real sensor/model infrastructure may not b
 ### Extra wow features implemented
 - Plant Inbox: conversational plant/system feed with quick action replies.
 - Operator Mode Briefing: one-click, cross-fleet LLM-generated morning checklist.
+- Starter onboarding walkthrough: guided step-by-step training for first-time users.
 
 ## Tech Stack
 - Next.js (App Router) + TypeScript
@@ -129,6 +130,7 @@ lib/
   mock/                     # Sensor generation, anomalies, forecasts, disease mock
   llm/                      # Prompts, client, cache, fallback, rate limit
   ml/                       # Disease inference orchestration + fallback guidance
+  onboarding/               # Starter walkthrough library + state persistence
   shortcuts/                # Shortcut registry and hooks
   errors/                   # Error serialization + debug copy helpers
 types/
@@ -236,6 +238,19 @@ API routes validate request/response contracts with zod and return fallback-safe
 3. Show graceful fallback content.
 4. Open error details disclosure and click **Copy debug details**.
 5. Use retry action and reset demo data recovery action.
+
+## Starter Onboarding Walkthrough
+- Click **Walkthrough** in the header.
+- Follow one clear step at a time:
+  - seed demo plants
+  - choose a plant
+  - check alerts
+  - inject an anomaly drill
+  - open disease panel
+  - generate morning ops brief
+  - open command palette
+- Progress is saved in local storage key `vera-onboarding-starter-v1`.
+- Use **restart walkthrough** anytime to train again.
 
 ## Future Expansions
 - Real sensor ingestion via MQTT/HTTP and device adapters.
