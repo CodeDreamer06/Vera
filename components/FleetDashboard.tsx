@@ -259,6 +259,15 @@ export function FleetDashboard() {
     <AppShell
       title={t("fleetTitle")}
       subtitle={t("fleetSubtitle")}
+      sidebarActions={
+        <button
+          type="button"
+          className="neo-box neo-button bg-white font-black"
+          onClick={() => onboarding.setOpen(true)}
+        >
+          Walkthrough
+        </button>
+      }
       rightActions={
         <>
           <button
@@ -278,13 +287,6 @@ export function FleetDashboard() {
             }}
           >
             {opsLoading ? t("processing") : t("morningOps")}
-          </button>
-          <button
-            type="button"
-            className="neo-box neo-button bg-white font-black"
-            onClick={() => onboarding.setOpen(true)}
-          >
-            Walkthrough
           </button>
           <button
             type="button"

@@ -10,11 +10,13 @@ import { useI18n } from "@/lib/i18n";
 export function AppShell({
   children,
   rightActions,
+  sidebarActions,
   title,
   subtitle,
 }: {
   children: React.ReactNode;
   rightActions?: React.ReactNode;
+  sidebarActions?: React.ReactNode;
   title: string;
   subtitle: string;
 }) {
@@ -86,6 +88,9 @@ export function AppShell({
                 <Bell size={13} className="mr-1" />A
               </Pill>
             </div>
+            {sidebarActions ? (
+              <div className="mt-3 flex flex-col gap-2">{sidebarActions}</div>
+            ) : null}
             <div className="mt-4 font-mono text-[10px] uppercase leading-normal text-gray-600">
               {t("pressCmdK")}
               <br />
