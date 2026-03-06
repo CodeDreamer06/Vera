@@ -2,8 +2,8 @@
 
 import { create } from "zustand";
 
+import { getLlmLocaleContext } from "@/lib/locale";
 import { createForcedAnomaly, detectAnomalies } from "@/lib/mock/anomaly";
-import { mockDiseaseClassification } from "@/lib/mock/disease";
 import {
   generateForecast,
   predictiveAlertsFromForecast,
@@ -26,12 +26,12 @@ import type {
   SensorReading,
 } from "@/types/domain";
 import type {
-  DiseaseResponse,
   OperatorBriefResponse,
   PersonaResponse,
   PredictiveResponse,
   RootCauseResponse,
 } from "@/types/llm";
+import type { DiseaseMlResponse } from "@/types/ml";
 
 const MAX_HISTORY = 240;
 
@@ -107,6 +107,38 @@ const fetchJson = async <T>(url: string, body: unknown): Promise<T> => {
   }
 
   return (await res.json()) as T;
+};
+
+const fetchEspDistance = async (): Promise<number | null> => {
+  if (process.env.NEXT_PUBLIC_SENSOR_SOURCE !== "esp") {
+    return null;
+  }
+
+  try {
+    const res = await fetch("/api/device/esp?action=distance", {
+      method: "GET",
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      return null;
+    }
+
+    const data = (await res.json()) as { distanceCm?: number };
+    const distanceCm = Number(data.distanceCm);
+    if (!Number.isFinite(distanceCm)) {
+      return null;
+    }
+
+    return distanceCm;
+  } catch {
+    return null;
+  }
+};
+
+const distanceToSoilMoisture = (distanceCm: number) => {
+  const clampedDistance = Math.min(40, Math.max(5, distanceCm));
+  const ratio = (clampedDistance - 5) / 35;
+  return 90 - ratio * 70;
 };
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -244,6 +276,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       return;
     }
 
+    const liveDistanceCm = await fetchEspDistance();
     const newReadings: SensorReading[] = [];
     const newAlerts: Alert[] = [];
     const newAnomalies: Anomaly[] = [];
@@ -252,7 +285,16 @@ export const useAppStore = create<AppState>((set, get) => ({
     for (const plant of plants) {
       const plantReadings = readingsByPlant[plant.id] ?? [];
       const previous = plantReadings[plantReadings.length - 1];
-      const reading = generateReading(plant, previous);
+      const useLiveDistance =
+        liveDistanceCm !== null &&
+        plant.id === (get().activePlantId ?? plant.id);
+      const reading = generateReading(
+        plant,
+        previous,
+        useLiveDistance
+          ? { soilMoisture: distanceToSoilMoisture(liveDistanceCm) }
+          : undefined,
+      );
       newReadings.push(reading);
 
       const anomalyResult = detectAnomalies(plant, reading, previous);
@@ -357,6 +399,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       return;
     }
 
+    const locale = getLlmLocaleContext();
     const payload = {
       plantId,
       tone: personaTone,
@@ -372,6 +415,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         latest.tempC > 30
           ? "Possible heat stress visible"
           : "Leaves appear mostly healthy",
+      ...locale,
     };
 
     const response = await fetchJson<PersonaResponse>(
@@ -415,10 +459,12 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   requestRootCause: async (anomaly) => {
+    const locale = getLlmLocaleContext();
     return fetchJson<RootCauseResponse>("/api/llm/root-cause", {
       plantId: anomaly.plantId,
       anomaly: anomaly.patternType,
       topSignals: anomaly.likelyCauses,
+      ...locale,
     });
   },
 
@@ -428,21 +474,20 @@ export const useAppStore = create<AppState>((set, get) => ({
     summary,
     interventions,
   ) => {
+    const locale = getLlmLocaleContext();
     return fetchJson<PredictiveResponse>("/api/llm/predictive", {
       plantId,
       horizonHours,
       forecastSummary: summary,
       interventions,
+      ...locale,
     });
   },
 
   analyzeDisease: async (plantId, imageDataUrlOrBlobKey, imageMeta) => {
-    const mock = mockDiseaseClassification();
-
-    const llm = await fetchJson<DiseaseResponse>("/api/llm/disease", {
+    const ml = await fetchJson<DiseaseMlResponse>("/api/ml/disease", {
       plantId,
-      label: mock.label,
-      confidence: mock.confidence,
+      imageDataUrlOrBlobKey,
       imageMeta,
     });
 
@@ -451,11 +496,11 @@ export const useAppStore = create<AppState>((set, get) => ({
       plantId,
       createdAt: Date.now(),
       imageDataUrlOrBlobKey,
-      mockLabel: mock.label,
-      confidence: mock.confidence,
-      llmNarrative: llm.explanation,
-      treatmentPlan: llm.treatmentPlan,
-      safetyWarnings: llm.safetyWarnings,
+      mockLabel: ml.label,
+      confidence: ml.confidence,
+      llmNarrative: ml.explanation,
+      treatmentPlan: ml.treatmentPlan,
+      safetyWarnings: ml.safetyWarnings,
     };
 
     await repository.disease.put(scan);
@@ -472,6 +517,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   runOperatorBrief: async () => {
     const { plants, readingsByPlant, alerts } = get();
+    const locale = getLlmLocaleContext();
     const topAlerts = alerts
       .slice(-6)
       .map((a) => `${a.severity.toUpperCase()}: ${a.title}`);
@@ -490,6 +536,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         scope: `Fleet size ${plants.length}`,
         plantSummaries,
         topAlerts,
+        ...locale,
       },
     );
 

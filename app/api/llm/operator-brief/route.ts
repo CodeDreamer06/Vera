@@ -14,7 +14,10 @@ export const POST = async (request: NextRequest) =>
     requestSchema: OperatorBriefRequestSchema,
     responseSchema: OperatorBriefResponseSchema,
     prompt: (parsed) => ({
-      system: prompts.operatorBrief(),
+      system: prompts.operatorBrief({
+        outputLanguage: parsed.outputLanguage,
+        locationContext: parsed.locationContext,
+      }),
       user: JSON.stringify(parsed),
     }),
     fallback: fallbackResponses.operatorBrief,

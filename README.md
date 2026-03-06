@@ -2,7 +2,7 @@
 
 Vera Command Center is an offline-first, cinematic hydroponics operations dashboard for monitoring many plants at once, with LLM-powered narration and decision support.
 
-It is built for hackathon demos where real sensor/model infrastructure may not be available yet: sensor streams, forecasting, and disease classification are mocked but realistic; LLM features are fully wired with secure API routes and graceful fallbacks.
+It is built for hackathon demos where real sensor/model infrastructure may not be available yet: sensor streams and forecasting are mocked but realistic; disease classification is now backed by a TFLite model via backend inference; LLM features remain wired with secure API routes and graceful fallbacks.
 
 ## Screenshots
 - Fleet command center (placeholder)
@@ -19,7 +19,7 @@ It is built for hackathon demos where real sensor/model infrastructure may not b
 - Time Travel simulation (0-7 day slider): wilted vs stable vs lush visual states with intervention toggles.
 - Mock forecasting + predictive alerts: “You will have a problem in X hours.”
 - Anomaly detection + root-cause ranking (LLM explanation + actions).
-- Disease panel with webcam/upload input (mock classification + LLM treatment plan).
+- Disease panel with webcam/upload input (TFLite classification + local treatment guidance).
 - Local persistence via IndexedDB (Dexie), fully offline-capable in mock LLM mode.
 - Import/export of complete demo data as JSON.
 
@@ -57,14 +57,29 @@ npm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000)
 
+### 4) Install ML inference dependencies (Python)
+The disease API route runs a Python TFLite inference bridge script.
+```bash
+python3 -m pip install -r scripts/requirements-plant-disease.txt
+```
+
 ## Environment Variables (`.env.example`)
 - `OPENAI_API_KEY`: LLM API key for OpenAI-compatible provider.
 - `LLM_BASE_URL`: OpenAI-compatible base URL.
 - `LLM_MODEL`: model id used by API routes.
 - `NEXT_PUBLIC_DEMO_MODE`: enable demo flow defaults.
+- `MOCK_LLM`: server-side LLM mock switch (`1` forces fallback, `0` uses provider).
 - `NEXT_PUBLIC_MOCK_LLM`: `1` forces offline deterministic responses.
 - `NEXT_PUBLIC_SENSOR_TICK_MS`: interval for simulated readings.
 - `NEXT_PUBLIC_MAX_PLANTS`: initial seed size target.
+- `NEXT_PUBLIC_SENSOR_SOURCE`: `mock` (default) or `esp` for live distance override on active plant.
+- `ESP8266_BASE_URL`: base URL of ESP device, e.g. `http://192.168.1.50`.
+- `ESP8266_DISTANCE_PATH`: path to read distance (default `/distance`).
+- `ESP8266_TIMEOUT_MS`: timeout for bridge calls.
+- `PLANT_DISEASE_PYTHON_BIN`: Python executable used for ML inference (`python3` by default).
+- `PLANT_DISEASE_MODEL_PATH`: path to `model.tflite`.
+- `PLANT_DISEASE_LABELS_PATH`: path to labels text file.
+- `PLANT_DISEASE_INFER_TIMEOUT_MS`: timeout for one model inference call.
 
 ## Local Data Model (IndexedDB)
 
@@ -87,7 +102,7 @@ Key entities:
 - **sensor_readings**: time-series metrics (pH, TDS, DO, temp, humidity, soil moisture, water + nutrient usage)
 - **alerts/anomalies**: predictive and anomaly intelligence
 - **persona_messages**: tone-specific first-person narratives
-- **disease_scans**: image reference + mock disease + LLM triage plan
+- **disease_scans**: image reference + ML disease label + treatment triage plan
 - **inbox_messages**: plant/system/operator interactions
 - **ops_briefs**: fleet-level action briefings
 
@@ -107,6 +122,7 @@ Indexes:
 ```text
 app/
   api/llm/*                 # LLM API routes
+  api/ml/disease/route.ts   # ML disease inference route (TFLite via Python)
   plants/[plantId]/page.tsx # Plant detail
   settings/page.tsx         # Settings and data tools
   error.tsx                 # Route-level error UI
@@ -118,11 +134,15 @@ lib/
   storage/                  # Dexie schema + repositories + import/export
   mock/                     # Sensor generation, anomalies, forecasts, disease mock
   llm/                      # Prompts, client, cache, fallback, rate limit
+  ml/                       # Disease model inference bridge + guidance mapping
   shortcuts/                # Shortcut registry and hooks
   errors/                   # Error serialization + debug copy helpers
+scripts/
+  plant_disease_infer.py    # Python TFLite runtime script
 types/
   domain.ts                 # Core domain models
   llm.ts                    # API payload/response contracts
+  ml.ts                     # ML disease API contracts
 ```
 
 ## LLM Wiring (What is real vs mocked)
@@ -130,15 +150,27 @@ types/
   - persona generation
   - predictive narratives
   - root-cause explanations
-  - disease explanation/treatment plan
   - operator briefing
 - Mocked ML:
   - sensor streams
   - forecasting values
   - anomaly detector signals
-  - disease classifier labels from image
+- Real ML:
+  - disease classifier labels from image (`/api/ml/disease`, TFLite model)
+
+To keep sensors mocked but use real LLM calls, set `NEXT_PUBLIC_SENSOR_SOURCE=mock` and `MOCK_LLM=0` (or `NEXT_PUBLIC_MOCK_LLM=0`).
 
 API routes validate request/response contracts with zod and return fallback-safe payloads on failures.
+
+## ESP8266 Integration (v1)
+- Route added: `app/api/device/esp/route.ts`.
+- Supported app commands:
+  - `POST /api/device/esp` `{ "action": "toggleRelay" }`
+  - `POST /api/device/esp` `{ "action": "setOnTime", "value": 300000 }`
+  - `POST /api/device/esp` `{ "action": "setOffTime", "value": 3600000 }`
+  - `GET /api/device/esp?action=distance` (expects numeric payload)
+- Settings page now includes an **ESP8266_Bridge** panel for testing these actions.
+- If `NEXT_PUBLIC_SENSOR_SOURCE=esp`, the dashboard uses ESP distance (when available) to override active plant `soilMoisture` during ticks.
 
 ## Hackathon Mode
 - Click **Start Demo Mode** to seed multiple plants and 24-72h history.
@@ -194,7 +226,7 @@ API routes validate request/response contracts with zod and return fallback-safe
 1. Open Disease Panel (`D`).
 2. Capture webcam image or upload one.
 3. Run analysis.
-4. Show mock disease label + LLM explanation + treatment plan + safety warnings.
+4. Show ML disease label + treatment plan + safety warnings.
 
 ### 6) Plant Inbox and operator briefing
 1. Open Plant Inbox and select quick reply action.
@@ -216,7 +248,7 @@ API routes validate request/response contracts with zod and return fallback-safe
 ## Future Expansions
 - Real sensor ingestion via MQTT/HTTP and device adapters.
 - Real forecasting models (Prophet/LSTM/transformer time-series).
-- Real disease classifier (vision model) with confidence calibration.
+- Confidence calibration and per-crop threshold tuning for disease classifier.
 - Edge deployment near farms with intermittent connectivity handling.
 - Device-control loops (aeration, dosing, HVAC) with safety guardrails.
 - Multi-tenant RBAC + audit logs.

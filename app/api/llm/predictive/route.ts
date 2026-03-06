@@ -11,7 +11,10 @@ export const POST = async (request: NextRequest) =>
     requestSchema: PredictiveRequestSchema,
     responseSchema: PredictiveResponseSchema,
     prompt: (parsed) => ({
-      system: prompts.predictive(),
+      system: prompts.predictive({
+        outputLanguage: parsed.outputLanguage,
+        locationContext: parsed.locationContext,
+      }),
       user: JSON.stringify(parsed),
     }),
     fallback: fallbackResponses.predictive,

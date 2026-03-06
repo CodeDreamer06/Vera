@@ -11,7 +11,11 @@ export const POST = async (request: NextRequest) =>
     requestSchema: PersonaRequestSchema,
     responseSchema: PersonaResponseSchema,
     prompt: (parsed) => ({
-      system: prompts.persona({ tone: parsed.tone }),
+      system: prompts.persona({
+        tone: parsed.tone,
+        outputLanguage: parsed.outputLanguage,
+        locationContext: parsed.locationContext,
+      }),
       user: JSON.stringify(parsed),
     }),
     fallback: fallbackResponses.persona,

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { Pill } from "@/components/ui/Glass";
+import { useI18n } from "@/lib/i18n";
 
 export function AppShell({
   children,
@@ -18,10 +19,11 @@ export function AppShell({
   subtitle: string;
 }) {
   const pathname = usePathname();
+  const { t } = useI18n();
 
   const nav = [
-    { href: "/", label: "Command", icon: Leaf, slot: "01" },
-    { href: "/settings", label: "Settings", icon: Settings, slot: "02" },
+    { href: "/", label: t("navCommand"), icon: Leaf, slot: "01" },
+    { href: "/settings", label: t("navSettings"), icon: Settings, slot: "02" },
   ];
 
   return (
@@ -74,7 +76,7 @@ export function AppShell({
           {/* Terminal Shortcut Block */}
           <div className="border-t-[3px] border-black bg-gray-200 p-6">
             <div className="mb-3 font-mono text-xs font-bold uppercase opacity-60">
-              Shortcuts
+              {t("shortcuts")}
             </div>
             <div className="grid grid-cols-2 gap-2">
               <Pill className="justify-center border-2 px-0 py-2 text-sm">
@@ -85,9 +87,9 @@ export function AppShell({
               </Pill>
             </div>
             <div className="mt-4 font-mono text-[10px] uppercase leading-normal text-gray-600">
-              {"> Press CMD+K for"}
+              {t("pressCmdK")}
               <br />
-              {"> Command Palette"}
+              {t("commandPalette")}
             </div>
           </div>
 
@@ -116,7 +118,7 @@ export function AppShell({
               <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div className="lg:w-2/3">
                   <div className="mb-4 inline-block border-2 border-white bg-black px-3 py-1 font-mono text-xs font-bold uppercase tracking-[0.18em] text-white shadow-[2px_2px_0_0_rgba(0,0,0,1)]">
-                    Hydroponic_Division
+                    {t("hydroponicDivision")}
                   </div>
                   <h2 className="font-display text-4xl font-black uppercase leading-[0.88] tracking-tighter md:text-6xl">
                     {title}

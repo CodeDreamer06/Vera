@@ -4,6 +4,7 @@ import { Command } from "cmdk";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
+import { useI18n } from "@/lib/i18n";
 import type { Plant } from "@/types/domain";
 
 interface CommandPaletteProps {
@@ -28,6 +29,7 @@ export function CommandPalette({
   onRunBrief,
 }: CommandPaletteProps) {
   const router = useRouter();
+  const { t } = useI18n();
 
   useEffect(() => {
     if (!open) {
@@ -51,22 +53,22 @@ export function CommandPalette({
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 p-4 pt-24 backdrop-blur-sm">
       <Command
-        label="Command Palette"
+        label={t("paletteTitle")}
         className="w-full max-w-xl overflow-hidden neo-box bg-white text-black shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <Command.Input
           autoFocus
-          placeholder="Type a command or plant name..."
+          placeholder={t("palettePlaceholder")}
           className="neo-input w-full border-b-[3px] border-black px-4 py-3 text-sm outline-none"
         />
         <Command.List className="max-h-[60vh] overflow-auto p-2">
           <Command.Empty className="p-3 text-sm text-black/60">
-            No results.
+            {t("noResults")}
           </Command.Empty>
 
           <Command.Group
-            heading="Actions"
+            heading={t("actions")}
             className="px-2 text-xs text-black/50"
           >
             <Command.Item
@@ -76,7 +78,7 @@ export function CommandPalette({
                 onOpenChange(false);
               }}
             >
-              Open alerts center
+              {t("openAlertsCenter")}
             </Command.Item>
             <Command.Item
               className="cursor-pointer border-2 border-transparent px-3 py-2 text-sm data-[selected=true]:border-black data-[selected=true]:bg-[var(--color-accent)]"
@@ -85,7 +87,7 @@ export function CommandPalette({
                 onOpenChange(false);
               }}
             >
-              Open disease panel
+              {t("openDiseasePanel")}
             </Command.Item>
             <Command.Item
               className="cursor-pointer border-2 border-transparent px-3 py-2 text-sm data-[selected=true]:border-black data-[selected=true]:bg-[var(--color-accent)]"
@@ -94,7 +96,7 @@ export function CommandPalette({
                 onOpenChange(false);
               }}
             >
-              Inject demo anomaly
+              {t("injectDemoAnomaly")}
             </Command.Item>
             <Command.Item
               className="cursor-pointer border-2 border-transparent px-3 py-2 text-sm data-[selected=true]:border-black data-[selected=true]:bg-[var(--color-accent)]"
@@ -103,7 +105,7 @@ export function CommandPalette({
                 onOpenChange(false);
               }}
             >
-              Generate operator briefing
+              {t("generateOperatorBriefing")}
             </Command.Item>
             <Command.Item
               className="cursor-pointer border-2 border-transparent px-3 py-2 text-sm data-[selected=true]:border-black data-[selected=true]:bg-[var(--color-accent)]"
@@ -112,7 +114,7 @@ export function CommandPalette({
                 onOpenChange(false);
               }}
             >
-              Show keyboard shortcuts
+              {t("showKeyboardShortcuts")}
             </Command.Item>
             <Command.Item
               className="cursor-pointer border-2 border-transparent px-3 py-2 text-sm data-[selected=true]:border-black data-[selected=true]:bg-[var(--color-accent)]"
@@ -121,12 +123,12 @@ export function CommandPalette({
                 onOpenChange(false);
               }}
             >
-              Open settings
+              {t("openSettings")}
             </Command.Item>
           </Command.Group>
 
           <Command.Group
-            heading="Plants"
+            heading={t("plants")}
             className="mt-2 px-2 text-xs text-black/50"
           >
             {plants.map((plant) => (

@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 
+import { useI18n } from "@/lib/i18n";
 import { shortcuts } from "@/lib/shortcuts/registry";
 
 export function ShortcutsDialog({
@@ -11,6 +12,7 @@ export function ShortcutsDialog({
   open: boolean;
   onClose: () => void;
 }) {
+  const { t } = useI18n();
   useEffect(() => {
     if (!open) {
       return;
@@ -34,13 +36,13 @@ export function ShortcutsDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
       <div className="w-full max-w-2xl neo-box bg-white p-5 text-black">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Keyboard Shortcuts</h2>
+          <h2 className="text-lg font-semibold">{t("keyboardShortcuts")}</h2>
           <button
             type="button"
             className="neo-box neo-button"
             onClick={onClose}
           >
-            Close
+            {t("close")}
           </button>
         </div>
 

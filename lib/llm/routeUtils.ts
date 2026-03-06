@@ -56,7 +56,10 @@ export const handleLlmRoute = async <TReq, TRes>(params: {
 
     setCached(key, result);
     return NextResponse.json(result);
-  } catch {
+  } catch (error) {
+    console.error(`[LLM route fallback] ${params.request.nextUrl.pathname}`, {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(params.fallback());
   }
 };

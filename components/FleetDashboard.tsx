@@ -23,6 +23,7 @@ import { GlassCard, Pill } from "@/components/ui/Glass";
 import { PanelErrorBoundary } from "@/components/ui/PanelErrorBoundary";
 import { ShortcutsDialog } from "@/components/ui/ShortcutsDialog";
 import { useShortcutBindings } from "@/lib/shortcuts/useShortcutBindings";
+import { useI18n } from "@/lib/i18n";
 import { useAppStore } from "@/lib/store";
 import type { TimeTravelControls } from "@/types/domain";
 
@@ -37,6 +38,7 @@ const chartMetrics = [
 
 export function FleetDashboard() {
   const router = useRouter();
+  const { t } = useI18n();
   const searchRef = useRef<HTMLInputElement>(null);
   const rangeRef = useRef<HTMLSelectElement>(null);
 
@@ -160,7 +162,7 @@ export function FleetDashboard() {
     onRange: () => rangeRef.current?.focus(),
     onDisease: () => setShowDisease((v) => !v),
     onAnomaly: () => {
-      injectDemoAnomaly().then(() => toast.success("Demo anomaly injected"));
+      injectDemoAnomaly().then(() => toast.success(t("demoAnomalyInjected")));
     },
     onRecipe: () => toggleRecipeMode(),
     onSettings: () => router.push("/settings"),
@@ -168,8 +170,8 @@ export function FleetDashboard() {
 
   return (
     <AppShell
-      title="Fleet Command Center"
-      subtitle="Monitor biological units. Predict system failures. Coordinate interventions via LLM copilot interface."
+      title={t("fleetTitle")}
+      subtitle={t("fleetSubtitle")}
       rightActions={
         <>
           <button
@@ -179,7 +181,7 @@ export function FleetDashboard() {
               startDemoMode(Number(process.env.NEXT_PUBLIC_MAX_PLANTS ?? 9))
             }
           >
-            Start Demo
+            {t("startDemo")}
           </button>
           <button
             type="button"
@@ -188,7 +190,7 @@ export function FleetDashboard() {
               setOpsLoading(true);
               try {
                 await runOperatorBrief();
-                toast.success("Operator briefing generated");
+                toast.success(t("operatorBriefGenerated"));
               } catch (error) {
                 toast.error((error as Error).message);
               } finally {
@@ -196,7 +198,7 @@ export function FleetDashboard() {
               }
             }}
           >
-            {opsLoading ? "PROCESSING..." : "Morning Ops"}
+            {opsLoading ? t("processing") : t("morningOps")}
           </button>
           <button
             type="button"
@@ -209,11 +211,11 @@ export function FleetDashboard() {
       }
     >
       {loading ? (
-        <div className="neo-box bg-white p-8 text-center">
-          <div className="font-mono text-sm uppercase tracking-wider">
-            <span className="cursor-blink">INITIALIZING SYSTEM</span>
-          </div>
-        </div>
+            <div className="neo-box bg-white p-8 text-center">
+              <div className="font-mono text-sm uppercase tracking-wider">
+            <span className="cursor-blink">{t("initializingSystem")}</span>
+              </div>
+            </div>
       ) : (
         <>
           {/* Main Content Grid - Plant Monitor + Terminal */}
@@ -226,14 +228,14 @@ export function FleetDashboard() {
                   <div className="flex items-center gap-3">
                     <div className="w-1 h-8 bg-black" />
                     <h3 className="text-xl font-black uppercase tracking-tight">
-                      Multi-Plant_Monitor
+                      {t("monitor")}
                     </h3>
                     <span className="neo-pill bg-gray-100">
-                      {activeCount}_UNITS
+                      {t("units", { count: activeCount })}
                     </span>
                     {recipeMode ? (
                       <span className="neo-pill neo-pill-accent">
-                        RECIPE_MODE
+                        {t("recipeMode")}
                       </span>
                     ) : null}
                   </div>
@@ -244,7 +246,7 @@ export function FleetDashboard() {
                       ref={searchRef}
                       value={search}
                       onChange={(e) => setSearch(e.currentTarget.value)}
-                      placeholder="SEARCH_ID..."
+                      placeholder={t("searchPlaceholder")}
                       className="bg-transparent border-none outline-none font-mono font-bold uppercase w-full text-lg placeholder-gray-400"
                     />
                     <span className="cursor-blink" />
@@ -268,7 +270,7 @@ export function FleetDashboard() {
 
               {/* Load More */}
               <button className="w-full neo-box py-4 font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all group">
-                Load More Units [+]
+                {t("loadMore")}
               </button>
             </div>
 
@@ -297,20 +299,20 @@ export function FleetDashboard() {
                   <div className="text-3xl font-black seven-seg">
                     {String(activeCount).padStart(2, "0")}
                   </div>
-                  <div className="font-mono text-xs uppercase mt-1">Active</div>
+                  <div className="font-mono text-xs uppercase mt-1">{t("active")}</div>
                 </div>
                 <div className={`neo-box p-4 text-center ${alertCount > 0 ? "bg-[var(--color-alert)]" : "bg-white"}`}>
                   <div className={`text-3xl font-black seven-seg ${alertCount > 0 ? "text-white" : ""}`}>
                     {String(alertCount).padStart(2, "0")}
                   </div>
                   <div className={`font-mono text-xs uppercase mt-1 ${alertCount > 0 ? "text-white" : ""}`}>
-                    Alert
+                    {t("alert")}
                   </div>
                 </div>
                 <div className="neo-box p-4 text-center col-span-2 bg-[var(--color-info)] border-black">
                   <div className="flex justify-between items-center">
-                    <span className="font-mono text-xs uppercase">LLM Status</span>
-                    <span className="text-xl font-black">ONLINE</span>
+                    <span className="font-mono text-xs uppercase">{t("llmStatus")}</span>
+                    <span className="text-xl font-black">{t("online")}</span>
                   </div>
                   <div className="w-full bg-black h-2 mt-2 border border-white">
                     <div className="bg-[var(--color-accent)] h-full w-full animate-pulse" />
@@ -349,7 +351,7 @@ export function FleetDashboard() {
                   <div className="flex items-center gap-3">
                     <Terminal size={20} className="text-[var(--color-accent)]" />
                     <span className="font-mono text-xs uppercase text-[var(--color-accent)]">
-                      Active Unit //
+                      {t("activeUnit")}
                     </span>
                     <span className="font-black text-xl uppercase tracking-tight">
                       {activePlant.name}
@@ -361,7 +363,7 @@ export function FleetDashboard() {
                   <div className="flex items-center gap-2">
                     <span className="status-dot active" />
                     <span className="font-mono text-xs uppercase">
-                      {activePlant.healthScore}% HEALTH
+                      {t("healthPct", { value: activePlant.healthScore })}
                     </span>
                   </div>
                 </div>
@@ -378,10 +380,10 @@ export function FleetDashboard() {
                     <div className="mb-3 flex items-center justify-between gap-2">
                       <div>
                         <h3 className="text-sm font-black uppercase tracking-tight text-black">
-                          Live Telemetry • {activePlant.name}
+                          {t("liveTelemetry", { name: activePlant.name })}
                         </h3>
                         <p className="text-xs text-black/65 font-mono uppercase">
-                          Incoming simulated data with noise, drift, and anomalies
+                          {t("incomingTelemetry")}
                         </p>
                       </div>
                       <select
@@ -534,7 +536,7 @@ export function FleetDashboard() {
                           imageDataUrlOrBlobKey,
                           imageMeta,
                         );
-                        toast.success("Disease triage card updated");
+                        toast.success(t("diseaseCardUpdated"));
                       }}
                     />
                   </PanelErrorBoundary>
@@ -573,7 +575,7 @@ export function FleetDashboard() {
                       ))}
                     {alerts.filter(a => a.type === "predictive" && a.plantId === activePlant.id).length === 0 && (
                       <p className="text-xs text-black/50 font-mono uppercase">
-                        No predictive alerts for this unit.
+                        {t("noPredictiveAlerts")}
                       </p>
                     )}
                   </div>
@@ -584,10 +586,10 @@ export function FleetDashboard() {
             <div className="neo-box bg-white p-8 text-center">
               <div className="text-4xl mb-4">◉</div>
               <p className="font-mono text-sm uppercase text-black/65">
-                No biological units seeded yet.
+                {t("noUnitsTitle")}
               </p>
               <p className="font-mono text-xs uppercase text-black/40 mt-2">
-                Initialize demo mode to populate fleet.
+                {t("noUnitsSubtitle")}
               </p>
             </div>
           )}

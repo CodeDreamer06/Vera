@@ -15,6 +15,7 @@ import { RecipeModePanel } from "@/components/panels/RecipeModePanel";
 import { TimeTravelPanel } from "@/components/panels/TimeTravelPanel";
 import { GlassCard, Pill } from "@/components/ui/Glass";
 import { PanelErrorBoundary } from "@/components/ui/PanelErrorBoundary";
+import { useI18n } from "@/lib/i18n";
 import { useAppStore } from "@/lib/store";
 import type { TimeTravelControls } from "@/types/domain";
 
@@ -28,6 +29,7 @@ const metrics = [
 ] as const;
 
 export function PlantDetailView({ plantId }: { plantId: string }) {
+  const { t } = useI18n();
   const {
     hydrated,
     initialize,
@@ -63,12 +65,12 @@ export function PlantDetailView({ plantId }: { plantId: string }) {
   if (!hydrated) {
     return (
       <AppShell
-        title="Unit Detail"
-        subtitle="Loading telemetry and biological context..."
+        title={t("unitDetail")}
+        subtitle={t("loadingTelemetrySubtitle")}
       >
         <div className="neo-box bg-white p-8 text-center">
           <div className="font-mono text-sm uppercase tracking-wider">
-            <span className="cursor-blink">LOADING TELEMETRY...</span>
+            <span className="cursor-blink">{t("loadingTelemetry")}</span>
           </div>
         </div>
       </AppShell>
@@ -78,20 +80,20 @@ export function PlantDetailView({ plantId }: { plantId: string }) {
   if (!plant) {
     return (
       <AppShell
-        title="Unit Not Found"
-        subtitle="Biological unit unavailable in datastore."
+        title={t("unitNotFound")}
+        subtitle={t("unitUnavailable")}
       >
         <div className="neo-box bg-white p-8 text-center">
           <div className="text-4xl mb-4">◉</div>
           <p className="font-mono text-sm uppercase text-black/65">
-            Unit ID not found.
+            {t("unitIdNotFound")}
           </p>
           <Link
             href="/"
             className="neo-box neo-button mt-6 inline-flex items-center gap-2"
           >
             <ArrowLeft size={14} />
-            Return to Fleet
+            {t("returnToFleet")}
           </Link>
         </div>
       </AppShell>
@@ -108,7 +110,7 @@ export function PlantDetailView({ plantId }: { plantId: string }) {
           className="neo-box neo-button flex items-center gap-2"
         >
           <ArrowLeft size={14} />
-          Back to Fleet
+          {t("backToFleet")}
         </Link>
       }
     >
@@ -118,7 +120,7 @@ export function PlantDetailView({ plantId }: { plantId: string }) {
           <div className="flex items-center gap-3">
             <Terminal size={20} className="text-[var(--color-accent)]" />
             <span className="font-mono text-xs uppercase text-[var(--color-accent)]">
-              Unit ID //
+              {t("unitIdLabel")}
             </span>
             <span className="font-black text-xl uppercase tracking-tight">
               {plant.name}
@@ -131,7 +133,7 @@ export function PlantDetailView({ plantId }: { plantId: string }) {
             <div className="flex items-center gap-2">
               <Activity size={16} className="text-[var(--color-accent)]" />
               <span className="font-mono text-xs uppercase">
-                Health: {plant.healthScore}%
+                {t("healthLabel", { value: plant.healthScore })}
               </span>
             </div>
             <span className="status-dot active" />
@@ -258,7 +260,7 @@ export function PlantDetailView({ plantId }: { plantId: string }) {
                 imageMeta,
               }) => {
                 await analyzeDisease(current, imageDataUrlOrBlobKey, imageMeta);
-                toast.success("Disease scan completed");
+                toast.success(t("diseaseScanCompleted"));
               }}
             />
           </PanelErrorBoundary>

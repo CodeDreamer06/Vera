@@ -11,7 +11,10 @@ export const POST = async (request: NextRequest) =>
     requestSchema: RootCauseRequestSchema,
     responseSchema: RootCauseResponseSchema,
     prompt: (parsed) => ({
-      system: prompts.rootCause(),
+      system: prompts.rootCause({
+        outputLanguage: parsed.outputLanguage,
+        locationContext: parsed.locationContext,
+      }),
       user: JSON.stringify(parsed),
     }),
     fallback: fallbackResponses.rootCause,

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
 import { Toaster } from "sonner";
 
+import { LocaleBoot } from "@/components/layout/LocaleBoot";
 import { ThemeBoot } from "@/components/layout/ThemeBoot";
 import "./globals.css";
 
@@ -38,6 +39,7 @@ export default function RootLayout({
         className={`${display.variable} ${body.variable} ${mono.variable} antialiased`}
       >
         <ThemeBoot />
+        <LocaleBoot />
         {children}
         <Toaster theme="light" position="top-right" richColors />
       </body>

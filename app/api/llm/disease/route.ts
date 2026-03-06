@@ -11,7 +11,10 @@ export const POST = async (request: NextRequest) =>
     requestSchema: DiseaseRequestSchema,
     responseSchema: DiseaseResponseSchema,
     prompt: (parsed) => ({
-      system: prompts.disease(),
+      system: prompts.disease({
+        outputLanguage: parsed.outputLanguage,
+        locationContext: parsed.locationContext,
+      }),
       user: JSON.stringify(parsed),
     }),
     fallback: fallbackResponses.disease,

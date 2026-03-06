@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+const localeFields = {
+  outputLanguage: z.string().optional(),
+  locationContext: z.string().optional(),
+};
+
 export const PersonaRequestSchema = z.object({
   plantId: z.string(),
   tone: z.enum(["calm", "dramatic", "scientific", "funny"]),
@@ -12,6 +17,7 @@ export const PersonaRequestSchema = z.object({
     soilMoisture: z.number(),
   }),
   visionStatus: z.string(),
+  ...localeFields,
 });
 
 export const PersonaResponseSchema = z.object({
@@ -25,6 +31,7 @@ export const PredictiveRequestSchema = z.object({
   horizonHours: z.number().int().positive(),
   forecastSummary: z.string(),
   interventions: z.array(z.string()),
+  ...localeFields,
 });
 
 export const PredictiveResponseSchema = z.object({
@@ -37,6 +44,7 @@ export const RootCauseRequestSchema = z.object({
   plantId: z.string(),
   anomaly: z.string(),
   topSignals: z.array(z.string()),
+  ...localeFields,
 });
 
 export const RootCauseResponseSchema = z.object({
@@ -57,6 +65,7 @@ export const DiseaseRequestSchema = z.object({
     size: z.number().optional(),
     type: z.string().optional(),
   }),
+  ...localeFields,
 });
 
 export const DiseaseResponseSchema = z.object({
@@ -69,6 +78,7 @@ export const OperatorBriefRequestSchema = z.object({
   scope: z.string(),
   plantSummaries: z.array(z.string()),
   topAlerts: z.array(z.string()),
+  ...localeFields,
 });
 
 export const OperatorBriefResponseSchema = z.object({
