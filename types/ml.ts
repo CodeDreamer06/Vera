@@ -25,7 +25,7 @@ export const DiseaseMlResponseSchema = z.object({
       confidence: z.number().min(0).max(1),
     }),
   ),
-  engine: z.enum(["llm-vision", "fallback"]),
+  engine: z.enum(["ml-tflite", "fallback"]),
 });
 
 export type DiseaseMlRequest = z.infer<typeof DiseaseMlRequestSchema>;

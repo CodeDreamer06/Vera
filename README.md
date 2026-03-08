@@ -58,9 +58,18 @@ npm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000)
 
-### 4) Verify LLM access
-Disease triage uses the configured LLM endpoint and your selected model.
-Ensure `OPENAI_API_KEY`, `LLM_BASE_URL`, and `LLM_MODEL` are set.
+### 4) Verify local ML disease inference (uv + TFLite)
+Disease triage runs through local Python inference using `uv` and the TFLite model from `../Plant-Disease-Detection-and-Solution`.
+
+Install `uv` if needed:
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Optional quick check:
+```bash
+uv --version
+```
 
 ## Environment Variables (`.env.example`)
 - `OPENAI_API_KEY`: LLM API key for OpenAI-compatible provider.
@@ -75,6 +84,12 @@ Ensure `OPENAI_API_KEY`, `LLM_BASE_URL`, and `LLM_MODEL` are set.
 - `ESP8266_BASE_URL`: base URL of ESP device, e.g. `http://192.168.1.50`.
 - `ESP8266_DISTANCE_PATH`: path to read distance (default `/distance`).
 - `ESP8266_TIMEOUT_MS`: timeout for bridge calls.
+- `UV_BIN`: optional `uv` binary override (default `uv`).
+- `PLANT_DISEASE_PYTHON`: Python version for `uv run` (default `3.11`).
+- `PLANT_DISEASE_RUNTIME`: `auto` (default), `tflite`, or `tensorflow`.
+- `PLANT_DISEASE_MODEL_PATH`: optional override for `.tflite` path.
+- `PLANT_DISEASE_LABELS_PATH`: optional override for labels path.
+- `PLANT_DISEASE_TOP_K`: number of classes returned by inference (`1-5`, default `3`).
 
 ## Local Data Model (IndexedDB)
 
@@ -117,7 +132,7 @@ Indexes:
 ```text
 app/
   api/llm/*                 # LLM API routes
-  api/ml/disease/route.ts   # Disease inference route (LLM vision)
+  api/ml/disease/route.ts   # Disease inference route (local ML via uv)
   plants/[plantId]/page.tsx # Plant detail
   settings/page.tsx         # Settings and data tools
   error.tsx                 # Route-level error UI
@@ -150,9 +165,9 @@ types/
   - forecasting values
   - anomaly detector signals
 - Real disease inference:
-  - disease classifier labels from image (`/api/ml/disease`, LLM vision)
+  - disease classifier labels from image (`/api/ml/disease`, local TFLite model via uv)
 
-To keep sensors mocked but use real LLM calls, set `NEXT_PUBLIC_SENSOR_SOURCE=mock` and `MOCK_LLM=0` (or `NEXT_PUBLIC_MOCK_LLM=0`).
+To keep sensors mocked while using real LLM features (persona/briefing/root-cause), set `NEXT_PUBLIC_SENSOR_SOURCE=mock` and `MOCK_LLM=0` (or `NEXT_PUBLIC_MOCK_LLM=0`).
 
 API routes validate request/response contracts with zod and return fallback-safe payloads on failures.
 

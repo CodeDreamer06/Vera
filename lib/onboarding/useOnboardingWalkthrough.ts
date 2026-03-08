@@ -7,6 +7,7 @@ import type { OnboardingState, OnboardingStep } from "@/lib/onboarding/types";
 const defaultState: OnboardingState = {
   completed: false,
   currentStepIndex: 0,
+  autoShown: false,
 };
 
 const parseState = (raw: string | null): OnboardingState | null => {
@@ -23,6 +24,7 @@ const parseState = (raw: string | null): OnboardingState | null => {
       return {
         completed: parsed.completed,
         currentStepIndex: Math.max(0, Math.floor(parsed.currentStepIndex)),
+        autoShown: parsed.autoShown === true,
       };
     }
     return null;
@@ -66,11 +68,21 @@ export function useOnboardingWalkthrough({
           stored.currentStepIndex,
           Math.max(steps.length - 1, 0),
         ),
+        autoShown: stored.autoShown,
       };
-      setState(bounded);
-      setOpen(!bounded.completed);
+      if (!bounded.completed && !bounded.autoShown) {
+        const firstAutoOpen = { ...bounded, autoShown: true };
+        setState(firstAutoOpen);
+        window.localStorage.setItem(key, JSON.stringify(firstAutoOpen));
+        setOpen(true);
+      } else {
+        setState(bounded);
+        setOpen(false);
+      }
     } else {
-      setState(defaultState);
+      const firstAutoOpen = { ...defaultState, autoShown: true };
+      setState(firstAutoOpen);
+      window.localStorage.setItem(key, JSON.stringify(firstAutoOpen));
       setOpen(true);
     }
 
@@ -98,7 +110,11 @@ export function useOnboardingWalkthrough({
     }
 
     if (atLastStep) {
-      const done = { completed: true, currentStepIndex: totalSteps - 1 };
+      const done = {
+        completed: true,
+        currentStepIndex: totalSteps - 1,
+        autoShown: true,
+      };
       persist(done);
       setOpen(false);
       return;
@@ -107,8 +123,9 @@ export function useOnboardingWalkthrough({
     persist({
       completed: false,
       currentStepIndex: state.currentStepIndex + 1,
+      autoShown: state.autoShown,
     });
-  }, [atLastStep, persist, state.currentStepIndex, totalSteps]);
+  }, [atLastStep, persist, state.autoShown, state.currentStepIndex, totalSteps]);
 
   const back = useCallback(() => {
     if (state.currentStepIndex <= 0) {
@@ -118,8 +135,9 @@ export function useOnboardingWalkthrough({
     persist({
       completed: false,
       currentStepIndex: state.currentStepIndex - 1,
+      autoShown: state.autoShown,
     });
-  }, [persist, state.currentStepIndex]);
+  }, [persist, state.autoShown, state.currentStepIndex]);
 
   const complete = useCallback(() => {
     if (totalSteps === 0) {
@@ -129,12 +147,13 @@ export function useOnboardingWalkthrough({
     persist({
       completed: true,
       currentStepIndex: totalSteps - 1,
+      autoShown: true,
     });
     setOpen(false);
   }, [persist, totalSteps]);
 
   const reset = useCallback(() => {
-    persist(defaultState);
+    persist({ ...defaultState, autoShown: true });
     setOpen(true);
   }, [persist]);
 

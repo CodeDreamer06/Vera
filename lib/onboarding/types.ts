@@ -9,4 +9,5 @@ export interface OnboardingStep {
 export interface OnboardingState {
   completed: boolean;
   currentStepIndex: number;
+  autoShown: boolean;
 }
